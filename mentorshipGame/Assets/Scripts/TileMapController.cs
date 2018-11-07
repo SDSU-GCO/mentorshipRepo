@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
 using System;
+using System.Linq;
 
 public class TileMapController : MonoBehaviour {
 
@@ -16,83 +17,9 @@ public class TileMapController : MonoBehaviour {
         public bool traverseable;
         public float cost;
         public float costSoFar;
-        public float h;
-        public float f;
+        public float estDisToB;
+        public float totalEstCost;
         public Vector2Int position;
-        
-        public static implicit operator Tile(TileClass obj)
-        {
-            Tile tile;
-            tile.visted = obj.visted;
-            tile.traverseable = obj.traverseable;
-            tile.cost = obj.cost;
-            tile.g = obj.costSoFar;
-            tile.h = obj.h;
-            tile.f = obj.f;
-            tile.position = obj.position;
-            return tile;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals((Tile)obj);
-        }
-
-        public bool Equals(Tile b)
-        {
-            if (position == b.position)
-                return true;
-            else
-                return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return (position.x << 5) + position.x ^ position.y;
-        }
-    }
-
-    struct Tile 
-    {
-        public bool visted;
-        public bool traverseable;
-        public float cost;
-        public float g;
-        public float h;
-        public float f;
-        public Vector2Int position;
-
-        public static implicit operator TileClass(Tile obj)
-        {
-            TileClass tile = new TileClass();
-            tile.visted = obj.visted;
-            tile.traverseable = obj.traverseable;
-            tile.cost = obj.cost;
-            tile.costSoFar = obj.g;
-            tile.h = obj.h;
-            tile.f = obj.f;
-            tile.position = obj.position;
-            return tile;
-        }
-        
-
-    public override bool Equals(object obj)
-        {
-            return Equals((Tile)obj);
-        }
-
-        public bool Equals(Tile b)
-        {
-            if (position == b.position)
-                return true;
-            else
-                return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return (position.x << 5) + position.x ^ position.y;
-        }
     }
 
     List<List<TileClass>> tileGrid = new List<List<TileClass>>();
@@ -120,7 +47,7 @@ public class TileMapController : MonoBehaviour {
     
     void InitializeGrid()
     {
-        Tile tempTile;
+        TileClass tempTile;
         Vector2Int boundry = getMaxSizes();
         tileGrid.Capacity = boundry.x;
         for (int r = 0; r < boundry.x; r++)
@@ -134,44 +61,72 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    List<Vector2Int> getPath(Vector2Int origin, Vector2Int target)
+    List<Vector2Int> getPath(
+    Vector2Int origin, 
+    Vector2Int target)
     {
         tileGrid.ForEach(v => v.ForEach(t => t.costSoFar = Mathf.Infinity));
-        tileGrid.ForEach(v => v.ForEach(t => t.f = Mathf.Infinity));
-        tileGrid.ForEach(v => v.ForEach(t => t.h = Vector2.Distance(t.position, target)));
+        tileGrid.ForEach(v => v.ForEach(t => t.totalEstCost = Mathf.Infinity));
+        tileGrid.ForEach(v => v.ForEach(t => t.estDisToB = Vector2.Distance(t.position, target)));
+        
+        AStarData aStarData = new AStarData();
+        aStarData.openList = new HashSet<TileClass>();
+        aStarData.closedList = new HashSet<TileClass>();
 
-        HashSet<TileClass> openList = new HashSet<TileClass>();
-        HashSet<TileClass> closedList = new HashSet<TileClass>();
-
-        TileClass currentTile = tileGrid[origin.y][origin.x];
-        currentTile.visted = true;
-        currentTile.costSoFar = 0;
-        currentTile.f = currentTile.h;
-        closedList.Add(currentTile);
+        aStarData.currentTile = tileGrid[origin.y][origin.x];
+        aStarData.currentTile.visted = true;
+        aStarData.currentTile.costSoFar = 0;
+        aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB;
+        aStarData.closedList.Add(aStarData.currentTile);
+        
 
         List<List<TileClass>> adjacentSquares = new List<List<TileClass>>();
         adjacentSquares.ForEach(v => v = new List<TileClass>());
 
+        adjacentSquares.ForEach(v => v.ForEach(t => t = null));
         getNewAdjacentListSquare(adjacentSquares, origin);
 
         bool pathNotFound = true;
-        adjacentSquaresToOpenList(currentTile, adjacentSquares, openList, origin, closedList);
 
-        while (pathNotFound && openList.Count!=0)
+        adjacentSquaresToOpenList(adjacentSquares, aStarData);
+
+        while (pathNotFound && aStarData.currentTile!=null)
         {
-            Tile? minTile = null;
-            foreach(Tile tile in openList)
+            TileClass minTile = null;
+            foreach(TileClass tile in aStarData.openList)
             {
-                if(minTile == null || minTile.Value.f < tile.f)
+                if(minTile == null || minTile.totalEstCost < tile.totalEstCost)
                 {
                     minTile = tile;
                 }
             }
-            currentTile = (Tile)minTile;
-            currentTile.visted = true;
-            currentTile.costSoFar = 0;
-            currentTile.f = currentTile.h;
-            closedList.Add(currentTile);
+            aStarData.currentTile = minTile;
+            if(aStarData.currentTile != null)
+            {
+                aStarData.currentTile.visted = true;
+                aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB + aStarData.currentTile.costSoFar;
+                aStarData.closedList.Add(aStarData.currentTile);
+
+                adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+                getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
+                adjacentSquaresToOpenList(adjacentSquares, aStarData);
+
+                TileClass nextNode = null;
+                foreach(TileClass tileClass in aStarData.openList)
+                {
+                    if(nextNode==null || tileClass.totalEstCost < nextNode.totalEstCost)
+                    {
+                        nextNode = tileClass;
+                    }
+                }
+                if(nextNode!=null)
+                {
+                    aStarData.openList.Remove(nextNode);
+                    aStarData.closedList.Add(nextNode);
+                    aStarData.currentTile = nextNode;
+                }
+
+            }
 
         }
     }
@@ -180,87 +135,69 @@ public class TileMapController : MonoBehaviour {
 
     //BEGIN GENZO CODE
 
-    class AStarData{
-        public HashSet<TileClass> OpenList;
-        public HashSet<TileClass> ClosedList;
-        }
-    private bool InclusiveBounds(int min, int max, int value){
+    class AStarData
+    {
+        public HashSet<TileClass> openList;
+        public HashSet<TileClass> closedList;
+        public TileClass currentTile;
+    }
+
+
+    private bool InclusiveBounds(
+    int min, 
+    int max, 
+    int value)
+    {
         return (value >= min) && (value <= max);
-        }
-    private bool isValidTile(TileClass neighborTile) {
+    }
 
-        if (neighborTile != null) return true; else return false;
 
-        }
-    private void updateOpenList(AStarData currentData, 
-                                TileClass currentTile, 
-                                List<List<TileClass>> AdjSquares){
-        AdjSquares.ForEach(v => v.ForEach(u => { if (isValidTile(u)) updateAdjacentTiles(ref currentTile.position, currentTile, AdjSquares, currentData.OpenList, currentData.ClosedList, u.position.x, u.position.y); }));
-
-        }
+    private bool isValidTile(TileClass neighborTile)
+    {
+        return neighborTile != null;
+    }
 
     //END GENZO CODE
 
         
 
     private void adjacentSquaresToOpenList(
-    TileClass currentTile,
-    List<List<TileClass>> adjacentSquares,
-    Vector2Int position,
-    HashSet<TileClass> openList,
-    HashSet<TileClass> closedList)
+    List<List<TileClass>> adjSquares,
+    AStarData currentData)
     {
-        TileClass TempTile;
-        for (int row = -1; row <= 1; row++)
+        foreach(List<TileClass> tileClasses in tileGrid)
         {
-            int verticleCellOffset = row + position.y;
-            if (0 <= verticleCellOffset && verticleCellOffset < tileGrid.Count)
+            foreach(TileClass tileClass in tileClasses.Where(u=> isValidTile(u)))
             {
-                for (int col = -1; col <= 1; col++)
-                {
-                    int HorizontalCellOffset = col + position.x;
-                    if (0 <= HorizontalCellOffset && HorizontalCellOffset < tileGrid[0].Count)
-                    {
-                        bool isNotCenter = !(row == 0 && col == 0);
-                        if (isNotCenter)
-                        {
-                            
-                            updateAdjacentTiles(ref position, currentTile, adjacentSquares, openList, closedList, row, col);
-                        }
-                    }
-                }
+                updateAdjTiles(tileClass, currentData);
             }
         }
     }
 
-    void updateAdjacentTiles(
-    ref Vector2Int position,
-    TileClass currentTile,
-    List<List<TileClass>> adjacentSquares,
-    HashSet<TileClass> openList,
-    HashSet<TileClass> closedList,
-    int row,
-    int column)
+    void updateAdjTiles(
+    TileClass curNeighbor,
+    AStarData curData)
     {
-        int rowOffset = row + 1;
-        int columnOffset = column + 1;
-        if (closedList.Contains(adjacentSquares[rowOffset][columnOffset]) == false && openList.Contains(adjacentSquares[rowOffset][columnOffset]) == false)
+        if (curData.closedList.Contains(curNeighbor) == false)
         {
-            if (currentTile.costSoFar + adjacentSquares[rowOffset][columnOffset].cost < adjacentSquares[rowOffset][columnOffset].costSoFar)
+            if (curData.currentTile.costSoFar + curNeighbor.cost < curNeighbor.costSoFar)
             {
-                adjacentSquares[rowOffset][columnOffset].costSoFar = currentTile.costSoFar + adjacentSquares[rowOffset][columnOffset].cost;
+                curNeighbor.costSoFar = curData.currentTile.costSoFar + curNeighbor.cost;
             }
-            if (adjacentSquares[rowOffset][columnOffset].f > adjacentSquares[rowOffset][columnOffset].h + adjacentSquares[rowOffset][columnOffset].costSoFar)
+            if (curNeighbor.totalEstCost > curNeighbor.estDisToB + curNeighbor.costSoFar)
             {
-                adjacentSquares[rowOffset][columnOffset].f = adjacentSquares[rowOffset][columnOffset].h + adjacentSquares[rowOffset][columnOffset].costSoFar;
+                curNeighbor.totalEstCost = curNeighbor.estDisToB + curNeighbor.costSoFar;
 
             }
 
-            openList.Add(adjacentSquares[rowOffset][columnOffset]);
+            if(curData.openList.Contains(curNeighbor) == false)
+            {
+                curData.openList.Add(curNeighbor);
+            }
         }
     }
 
-    Vector2Int getNext()
+    public Vector2Int getNext()
     {
 
     }
@@ -285,9 +222,9 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    void getTile(out Tile tile, int x, int y)
+    void getTile(out TileClass tile, int x, int y)
     {
-        tile = new Tile();
+        tile = new TileClass();
         Color tileData = heatMap.getPixel(x, y);
         if (tileData.r == 1)
         {
@@ -299,6 +236,8 @@ public class TileMapController : MonoBehaviour {
         }
         tile.visted = false;
         tile.cost = tileData.r;
+        tile.position.x = x;
+        tile.position.y = y;
     }
 
     Vector2Int getMaxSizes()
