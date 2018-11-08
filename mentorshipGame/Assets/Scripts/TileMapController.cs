@@ -78,7 +78,9 @@ public class TileMapController : MonoBehaviour {
         aStarData.currentTile.costSoFar = 0;
         aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB;
         aStarData.closedList.Add(aStarData.currentTile);
-        
+
+        TileClass targetTile = tileGrid[target.y][target.x];
+        TileClass originTile = tileGrid[origin.y][origin.x];
 
         List<List<TileClass>> adjacentSquares = new List<List<TileClass>>();
         adjacentSquares.ForEach(v => v = new List<TileClass>());
@@ -107,28 +109,66 @@ public class TileMapController : MonoBehaviour {
                 aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB + aStarData.currentTile.costSoFar;
                 aStarData.closedList.Add(aStarData.currentTile);
 
-                adjacentSquares.ForEach(v => v.ForEach(t => t = null));
-                getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
-                adjacentSquaresToOpenList(adjacentSquares, aStarData);
 
-                TileClass nextNode = null;
-                foreach(TileClass tileClass in aStarData.openList)
+                if(aStarData.currentTile == targetTile)
                 {
-                    if(nextNode==null || tileClass.totalEstCost < nextNode.totalEstCost)
-                    {
-                        nextNode = tileClass;
-                    }
+                    pathNotFound = false;
                 }
-                if(nextNode!=null)
+                else
                 {
-                    aStarData.openList.Remove(nextNode);
-                    aStarData.closedList.Add(nextNode);
+                    adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+                    getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
+                    adjacentSquaresToOpenList(adjacentSquares, aStarData);
+
+                    TileClass nextNode = null;
+                    foreach (TileClass tileClass in aStarData.openList)
+                    {
+                        if (nextNode == null || tileClass.totalEstCost < nextNode.totalEstCost)
+                        {
+                            nextNode = tileClass;
+                        }
+                    }
+                    if (nextNode != null)
+                    {
+                        aStarData.openList.Remove(nextNode);
+                        aStarData.closedList.Add(nextNode);
+                    }
                     aStarData.currentTile = nextNode;
                 }
-
             }
 
         }
+
+        List<Vector2Int> path = new List<Vector2Int>();
+        if (pathNotFound==false)
+        {
+            while(aStarData.currentTile!= originTile)
+            {
+                path.Add(aStarData.currentTile.position);
+
+                adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+                getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
+                aStarData.currentTile = getLowestAdjSquare(adjacentSquares);
+
+            }
+        }
+        return path;
+    }
+
+    private TileClass getLowestAdjSquare(List<List<TileClass>> adjacentSquares)
+    {
+        TileClass lowest = null;
+        foreach (List<TileClass> tileClasses in tileGrid)
+        {
+            foreach (TileClass tileClass in tileClasses.Where(u => isValidTile(u)))
+            {
+                if(lowest==null || tileClass.totalEstCost < lowest.totalEstCost)
+                {
+                    lowest = tileClass;
+                }
+            }
+        }
+        return lowest;
     }
 
 
@@ -197,9 +237,19 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    public Vector2Int getNext()
+    public Vector2Int? getNextTile(Vector2Int origin, Vector2Int target)
     {
-
+        Vector2Int? nextTile;
+        List<Vector2Int> path = getPath(origin, target);
+        if(path.Count>0)
+        {
+            nextTile = path[0];
+        }
+        else
+        {
+            nextTile = null;
+        }
+        return nextTile;
     }
 
     void getNewAdjacentListSquare(List<List<TileClass>> adjacentSquares, Vector2Int position)
@@ -222,10 +272,10 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    void getTile(out TileClass tile, int x, int y)
+    void getTile<T>(out TileClass tile, int x, int y, T sourceMap) where T : IColorEncodedTileMap
     {
         tile = new TileClass();
-        Color tileData = heatMap.getPixel(x, y);
+        Color tileData = sourceMap.getPixel(x, y);
         if (tileData.r == 1)
         {
             tile.traverseable = false;
@@ -240,19 +290,14 @@ public class TileMapController : MonoBehaviour {
         tile.position.y = y;
     }
 
-    Vector2Int getMaxSizes()
+    Vector2Int getMaxSizes<T>(T sourceMap) where T : IColorEncodedTileMap
     {
-        return heatMap.getSize();
+        return sourceMap.getMaxSizes();
     }
 
-    // Use this for initialization
-    void Start () {
-    }
-    
-    // Update is called once per frame
-    void Update ()
+    interface IColorEncodedTileMap
     {
-
-
+        Vector2Int getMaxSizes();
+        Color getPixel(int x, int y);
     }
 }
