@@ -69,20 +69,13 @@ public class TileMapController : MonoBehaviour {
 
     float getOctileDistacne(Vector2Int origin, Vector2Int target)
     {
-        float axisLockedPart = 0;
-        float diagonalLockedPart = 0;
-        Vector2Int resultantVector = origin - target;
-        if(Mathf.Abs( resultantVector.x) > Mathf.Abs(resultantVector.y))
-        {
-            axisLockedPart = Mathf.Abs(resultantVector.x) - Mathf.Abs(resultantVector.y);
-            diagonalLockedPart = Mathf.Sqrt(Mathf.Abs(resultantVector.y) + Mathf.Abs(resultantVector.y));
-        }
-        else
-        {
-            axisLockedPart = Mathf.Abs(resultantVector.y) - Mathf.Abs(resultantVector.x);
-            diagonalLockedPart = Mathf.Sqrt(Mathf.Abs(resultantVector.x) + Mathf.Abs(resultantVector.x));
-        }
-        return axisLockedPart + diagonalLockedPart;
+        Vector2Int trajectory = target - origin;
+        trajectory.y = Mathf.Abs(trajectory.y);
+        trajectory.x = Mathf.Abs(trajectory.x);
+        int minAxis = Mathf.Min(trajectory.x, trajectory.y);
+        int cardinal = Mathf.Max(trajectory.x, trajectory.y) - minAxis;
+        float diagonal = minAxis * Mathf.Sqrt(2.0f);
+        return diagonal + cardinal;
     }
 
     List<Vector2Int> getPath(
