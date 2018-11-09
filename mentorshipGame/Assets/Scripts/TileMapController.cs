@@ -22,6 +22,12 @@ public class TileMapController : MonoBehaviour {
         public Vector2Int position;
     }
 
+    class AdjTileClassContainer
+    {
+        public TileClass tile;
+        public bool isCorner;
+    }
+
     List<List<TileClass>> tileGrid = new List<List<TileClass>>();
 
 
@@ -61,13 +67,31 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
+    float getOctileDistacne(Vector2Int origin, Vector2Int target)
+    {
+        float axisLockedPart = 0;
+        float diagonalLockedPart = 0;
+        Vector2Int resultantVector = origin - target;
+        if(Mathf.Abs( resultantVector.x) > Mathf.Abs(resultantVector.y))
+        {
+            axisLockedPart = Mathf.Abs(resultantVector.x) - Mathf.Abs(resultantVector.y);
+            diagonalLockedPart = Mathf.Sqrt(Mathf.Abs(resultantVector.y) + Mathf.Abs(resultantVector.y));
+        }
+        else
+        {
+            axisLockedPart = Mathf.Abs(resultantVector.y) - Mathf.Abs(resultantVector.x);
+            diagonalLockedPart = Mathf.Sqrt(Mathf.Abs(resultantVector.x) + Mathf.Abs(resultantVector.x));
+        }
+        return axisLockedPart + diagonalLockedPart;
+    }
+
     List<Vector2Int> getPath(
     Vector2Int origin, 
     Vector2Int target)
     {
         tileGrid.ForEach(v => v.ForEach(t => t.costSoFar = Mathf.Infinity));
         tileGrid.ForEach(v => v.ForEach(t => t.totalEstCost = Mathf.Infinity));
-        tileGrid.ForEach(v => v.ForEach(t => t.estDisToB = Vector2.Distance(t.position, target)));
+        tileGrid.ForEach(v => v.ForEach(t => t.estDisToB = getOctileDistacne(t.position, target)));
         
         AStarData aStarData = new AStarData();
         aStarData.openList = new HashSet<TileClass>();
@@ -82,10 +106,12 @@ public class TileMapController : MonoBehaviour {
         TileClass targetTile = tileGrid[target.y][target.x];
         TileClass originTile = tileGrid[origin.y][origin.x];
 
-        List<List<TileClass>> adjacentSquares = new List<List<TileClass>>();
-        adjacentSquares.ForEach(v => v = new List<TileClass>());
+        List<List<AdjTileClassContainer>> adjacentSquares = new List<List<AdjTileClassContainer>>();
+        adjacentSquares.ForEach(v => v = new List<AdjTileClassContainer>());
 
-        adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+        adjacentSquares.ForEach(v => v.ForEach(a => a = new AdjTileClassContainer()));
+        adjacentSquares.ForEach(v => v.ForEach(a => a.tile = null));
+        adjacentSquares.ForEach(v => v.ForEach(a => a.isCorner = false));
         getNewAdjacentListSquare(adjacentSquares, origin);
 
         bool pathNotFound = true;
@@ -116,7 +142,7 @@ public class TileMapController : MonoBehaviour {
                 }
                 else
                 {
-                    adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+                    adjacentSquares.ForEach(v => v.ForEach(a => a.tile = null));
                     getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
                     adjacentSquaresToOpenList(adjacentSquares, aStarData);
 
@@ -146,25 +172,24 @@ public class TileMapController : MonoBehaviour {
             {
                 path.Add(aStarData.currentTile.position);
 
-                adjacentSquares.ForEach(v => v.ForEach(t => t = null));
+                adjacentSquares.ForEach(v => v.ForEach(a => a.tile = null));
                 getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
                 aStarData.currentTile = getLowestAdjSquare(adjacentSquares);
-
             }
         }
         return path;
     }
 
-    private TileClass getLowestAdjSquare(List<List<TileClass>> adjacentSquares)
+    private TileClass getLowestAdjSquare(List<List<AdjTileClassContainer>> adjacentSquares)
     {
         TileClass lowest = null;
-        foreach (List<TileClass> tileClasses in tileGrid)
+        foreach (List<AdjTileClassContainer> adjTileClassContainers in adjacentSquares)
         {
-            foreach (TileClass tileClass in tileClasses.Where(u => isValidTile(u)))
+            foreach (AdjTileClassContainer adjTileClassContainer in adjTileClassContainers.Where(u => isValidTile(u.tile)))
             {
-                if(lowest==null || tileClass.totalEstCost < lowest.totalEstCost)
+                if(lowest==null || adjTileClassContainer.tile.totalEstCost < lowest.totalEstCost)
                 {
-                    lowest = tileClass;
+                    lowest = adjTileClassContainer.tile;
                 }
             }
         }
@@ -174,24 +199,21 @@ public class TileMapController : MonoBehaviour {
 
 
     //BEGIN GENZO CODE
-
+    /// <summary>
+    /// Bundle aStar data to reduce argument list madness
+    /// </summary>
     class AStarData
     {
         public HashSet<TileClass> openList;
         public HashSet<TileClass> closedList;
         public TileClass currentTile;
     }
-
-
-    private bool InclusiveBounds(
-    int min, 
-    int max, 
-    int value)
-    {
-        return (value >= min) && (value <= max);
-    }
-
-
+    
+    /// <summary>
+    /// check if a tile is valid
+    /// </summary>
+    /// <param name="neighborTile"></param>
+    /// <returns></returns>
     private bool isValidTile(TileClass neighborTile)
     {
         return neighborTile != null;
@@ -200,39 +222,63 @@ public class TileMapController : MonoBehaviour {
     //END GENZO CODE
 
         
-
+    /// <summary>
+    /// add valid adjacent squares to the open list
+    /// </summary>
+    /// <param name="adjSquares"></param>
+    /// <param name="currentData"></param>
     private void adjacentSquaresToOpenList(
-    List<List<TileClass>> adjSquares,
+    List<List<AdjTileClassContainer>> adjSquares,
     AStarData currentData)
     {
-        foreach(List<TileClass> tileClasses in tileGrid)
+        foreach(List<AdjTileClassContainer> adjTileClassContainers in adjSquares)
         {
-            foreach(TileClass tileClass in tileClasses.Where(u=> isValidTile(u)))
+            foreach(AdjTileClassContainer adjTileClassContainer in adjTileClassContainers.Where(u=> isValidTile(u.tile)))
             {
-                updateAdjTiles(tileClass, currentData);
+                updateAdjTiles(adjTileClassContainer, currentData);
             }
         }
     }
 
+    /// <summary>
+    /// Calculate the distance & cost to adjacent tiles using octile distance
+    /// </summary>
+    /// <param name="curNeighbor"></param>
+    /// <param name="curData"></param>
     void updateAdjTiles(
-    TileClass curNeighbor,
+    AdjTileClassContainer curNeighbor,
     AStarData curData)
     {
-        if (curData.closedList.Contains(curNeighbor) == false)
+        if (curData.closedList.Contains(curNeighbor.tile) == false)
         {
-            if (curData.currentTile.costSoFar + curNeighbor.cost < curNeighbor.costSoFar)
+            if(curNeighbor.isCorner==false)
             {
-                curNeighbor.costSoFar = curData.currentTile.costSoFar + curNeighbor.cost;
+                if (curData.currentTile.costSoFar + curNeighbor.tile.cost < curNeighbor.tile.costSoFar)
+                {
+                    curNeighbor.tile.costSoFar = curData.currentTile.costSoFar + curNeighbor.tile.cost;
+                }
+                if (curNeighbor.tile.totalEstCost > curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar)
+                {
+                    curNeighbor.tile.totalEstCost = curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar;
+                }
             }
-            if (curNeighbor.totalEstCost > curNeighbor.estDisToB + curNeighbor.costSoFar)
+            else
             {
-                curNeighbor.totalEstCost = curNeighbor.estDisToB + curNeighbor.costSoFar;
-
+                //use octile distance for diagonals
+                float squareRootOfTwo = Mathf.Sqrt(2);
+                if ((curData.currentTile.costSoFar + curNeighbor.tile.cost)* squareRootOfTwo < curNeighbor.tile.costSoFar)
+                {
+                    curNeighbor.tile.costSoFar = (curData.currentTile.costSoFar + curNeighbor.tile.cost) * squareRootOfTwo;
+                }
+                if (curNeighbor.tile.totalEstCost > curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar)
+                {
+                    curNeighbor.tile.totalEstCost = curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar;
+                }
             }
 
-            if(curData.openList.Contains(curNeighbor) == false)
+            if(curData.openList.Contains(curNeighbor.tile) == false)
             {
-                curData.openList.Add(curNeighbor);
+                curData.openList.Add(curNeighbor.tile);
             }
         }
     }
@@ -252,7 +298,9 @@ public class TileMapController : MonoBehaviour {
         return nextTile;
     }
 
-    void getNewAdjacentListSquare(List<List<TileClass>> adjacentSquares, Vector2Int position)
+    void getNewAdjacentListSquare(
+    List<List<AdjTileClassContainer>> adjSquares,
+    Vector2Int position)
     {
         for(int row = -1; row <= 1; row++)
         {
@@ -264,7 +312,15 @@ public class TileMapController : MonoBehaviour {
                     {
                         if(!(row==0 && col ==0))
                         {
-                            adjacentSquares[row+1][col+1] = tileGrid[row + position.y][col + position.x];
+                            adjSquares[row+1][col+1].tile = tileGrid[row + position.y][col + position.x];
+                            if(row!=0 && col !=0)
+                            {
+                                adjSquares[row + 1][col + 1].isCorner = true;
+                            }
+                            else
+                            {
+                                adjSquares[row + 1][col + 1].isCorner = false;
+                            }
                         }
                     }
                 }
