@@ -13,19 +13,19 @@ public class TileMapController : MonoBehaviour {
 
     class TileClass
     {
-        public bool visted;
+        public bool visited;
         public bool traverseable;
-        public float cost;
-        public float costSoFar;
-        public float estDisToB;
-        public float totalEstCost;
+        public float traverseCost;
+        public float cumulativeCost;
+        public float estDistanceToEnd;
+        public float totalEstCostToEnd;
         public Vector2Int position;
     }
 
     class AdjTileClassContainer
     {
         public TileClass tile;
-        public bool isCorner;
+        public bool isDiagonalToCurrentTile;
     }
 
     List<List<TileClass>> tileGrid = new List<List<TileClass>>();
@@ -54,20 +54,20 @@ public class TileMapController : MonoBehaviour {
     void InitializeGrid()
     {
         TileClass tempTile;
-        Vector2Int boundry = getMaxSizes();
-        tileGrid.Capacity = boundry.x;
-        for (int r = 0; r < boundry.x; r++)
+        Vector2Int boundary = getMaxSizes();
+        tileGrid.Capacity = boundary.x;
+        for (int tilePosY = 0; tilePosY < boundary.y; tilePosY++)
         {
-            tileGrid[r].Capacity = boundry.y;
-            for (int c = 0; c < boundry.y; c++)
+            tileGrid[tilePosY].Capacity = boundary.x;
+            for (int tilePosX = 0; tilePosX < boundary.y; tilePosX++)
             {
-                getTile(out tempTile, c, r);
-                tileGrid[r][c] = tempTile;
+                getTile(out tempTile, tilePosX, tilePosY);
+                tileGrid[tilePosY][tilePosX] = tempTile;
             }
         }
     }
 
-    float getOctileDistacne(Vector2Int origin, Vector2Int target)
+    float getOctileDistance(Vector2Int origin, Vector2Int target)
     {
         Vector2Int trajectory = target - origin;
         trajectory.y = Mathf.Abs(trajectory.y);
@@ -82,18 +82,21 @@ public class TileMapController : MonoBehaviour {
     Vector2Int origin, 
     Vector2Int target)
     {
-        tileGrid.ForEach(v => v.ForEach(t => t.costSoFar = Mathf.Infinity));
-        tileGrid.ForEach(v => v.ForEach(t => t.totalEstCost = Mathf.Infinity));
-        tileGrid.ForEach(v => v.ForEach(t => t.estDisToB = getOctileDistacne(t.position, target)));
+        //initiializes every tile grid's cumulative cost and total estimated cost to end to infinity.
+        //these fields will be updated once the traversing requires access to these grids.
+        //estimated distance to end is pre-calculated through octile distance function, to check later if we are going the right way.
+        tileGrid.ForEach(v => v.ForEach(t => t.cumulativeCost = Mathf.Infinity));
+        tileGrid.ForEach(v => v.ForEach(t => t.totalEstCostToEnd = Mathf.Infinity));
+        tileGrid.ForEach(v => v.ForEach(t => t.estDistanceToEnd = getOctileDistance(t.position, target)));
         
         AStarData aStarData = new AStarData();
         aStarData.openList = new HashSet<TileClass>();
         aStarData.closedList = new HashSet<TileClass>();
 
         aStarData.currentTile = tileGrid[origin.y][origin.x];
-        aStarData.currentTile.visted = true;
-        aStarData.currentTile.costSoFar = 0;
-        aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB;
+        aStarData.currentTile.visited = true;
+        aStarData.currentTile.cumulativeCost = 0;
+        aStarData.currentTile.totalEstCostToEnd = aStarData.currentTile.estDistanceToEnd;
         aStarData.closedList.Add(aStarData.currentTile);
 
         TileClass targetTile = tileGrid[target.y][target.x];
@@ -104,7 +107,7 @@ public class TileMapController : MonoBehaviour {
 
         adjacentSquares.ForEach(v => v.ForEach(a => a = new AdjTileClassContainer()));
         adjacentSquares.ForEach(v => v.ForEach(a => a.tile = null));
-        adjacentSquares.ForEach(v => v.ForEach(a => a.isCorner = false));
+        adjacentSquares.ForEach(v => v.ForEach(a => a.isDiagonalToCurrentTile = false));
         getNewAdjacentListSquare(adjacentSquares, origin);
 
         bool pathNotFound = true;
@@ -116,7 +119,7 @@ public class TileMapController : MonoBehaviour {
             TileClass minTile = null;
             foreach(TileClass tile in aStarData.openList)
             {
-                if(minTile == null || minTile.totalEstCost < tile.totalEstCost)
+                if(minTile == null || minTile.totalEstCostToEnd < tile.totalEstCostToEnd)
                 {
                     minTile = tile;
                 }
@@ -124,8 +127,8 @@ public class TileMapController : MonoBehaviour {
             aStarData.currentTile = minTile;
             if(aStarData.currentTile != null)
             {
-                aStarData.currentTile.visted = true;
-                aStarData.currentTile.totalEstCost = aStarData.currentTile.estDisToB + aStarData.currentTile.costSoFar;
+                aStarData.currentTile.visited = true;
+                aStarData.currentTile.totalEstCostToEnd = aStarData.currentTile.estDistanceToEnd + aStarData.currentTile.cumulativeCost;
                 aStarData.closedList.Add(aStarData.currentTile);
 
 
@@ -142,7 +145,7 @@ public class TileMapController : MonoBehaviour {
                     TileClass nextNode = null;
                     foreach (TileClass tileClass in aStarData.openList)
                     {
-                        if (nextNode == null || tileClass.totalEstCost < nextNode.totalEstCost)
+                        if (nextNode == null || tileClass.totalEstCostToEnd < nextNode.totalEstCostToEnd)
                         {
                             nextNode = tileClass;
                         }
@@ -180,7 +183,7 @@ public class TileMapController : MonoBehaviour {
         {
             foreach (AdjTileClassContainer adjTileClassContainer in adjTileClassContainers.Where(u => isValidTile(u.tile)))
             {
-                if(lowest==null || adjTileClassContainer.tile.totalEstCost < lowest.totalEstCost)
+                if(lowest==null || adjTileClassContainer.tile.totalEstCostToEnd < lowest.totalEstCostToEnd)
                 {
                     lowest = adjTileClassContainer.tile;
                 }
@@ -239,39 +242,56 @@ public class TileMapController : MonoBehaviour {
     /// <param name="curNeighbor"></param>
     /// <param name="curData"></param>
     void updateAdjTiles(
-    AdjTileClassContainer curNeighbor,
-    AStarData curData)
+    AdjTileClassContainer curryNeighbor,
+    AStarData curryData)
     {
-        if (curData.closedList.Contains(curNeighbor.tile) == false)
+        if (curryData.closedList.Contains(curryNeighbor.tile) == false)
         {
-            if(curNeighbor.isCorner==false)
+            //if the current neighboring tile is not diagonally positioned to the current tile
+            if(curryNeighbor.isDiagonalToCurrentTile==false)
             {
-                if (curData.currentTile.costSoFar + curNeighbor.tile.cost < curNeighbor.tile.costSoFar)
+                //if the current cumulative cost to the current tile and the cost to the neighboring tile is less than 
+                //cumulative cost in the neighboring tile (set to infinity initially)
+                if ((curryData.currentTile.cumulativeCost + curryNeighbor.tile.traverseCost) < 
+                    curryNeighbor.tile.cumulativeCost)
                 {
-                    curNeighbor.tile.costSoFar = curData.currentTile.costSoFar + curNeighbor.tile.cost;
+                    //set the new cumulative cost to traverse
+                    curryNeighbor.tile.cumulativeCost = curryData.currentTile.cumulativeCost 
+                        + curryNeighbor.tile.traverseCost;
                 }
-                if (curNeighbor.tile.totalEstCost > curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar)
+                //if the total esimated cost 
+                if (curryNeighbor.tile.totalEstCostToEnd > 
+                    curryNeighbor.tile.estDistanceToEnd + curryNeighbor.tile.cumulativeCost)
                 {
-                    curNeighbor.tile.totalEstCost = curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar;
+                    curryNeighbor.tile.totalEstCostToEnd = curryNeighbor.tile.estDistanceToEnd 
+                        + curryNeighbor.tile.cumulativeCost;
                 }
             }
+            //if the current tile is diagonally positioned to the current tile
             else
             {
                 //use octile distance for diagonals
-                float squareRootOfTwo = Mathf.Sqrt(2);
-                if ((curData.currentTile.costSoFar + curNeighbor.tile.cost)* squareRootOfTwo < curNeighbor.tile.costSoFar)
+                float sqrtTwo = Mathf.Sqrt(2);
+                //if the current cumulative cost to the current tile and the cost to the neighboring tile, multiplied by 
+                //square root of two is less than the cumulative cost in the neighboring tile (set to infinity initially)
+                if ((curryData.currentTile.cumulativeCost + curryNeighbor.tile.traverseCost)* sqrtTwo < 
+                    curryNeighbor.tile.cumulativeCost)
                 {
-                    curNeighbor.tile.costSoFar = (curData.currentTile.costSoFar + curNeighbor.tile.cost) * squareRootOfTwo;
+                    curryNeighbor.tile.cumulativeCost = (curryData.currentTile.cumulativeCost 
+                        + curryNeighbor.tile.traverseCost) * sqrtTwo;
                 }
-                if (curNeighbor.tile.totalEstCost > curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar)
+                if (curryNeighbor.tile.totalEstCostToEnd > curryNeighbor.tile.estDistanceToEnd 
+                    + curryNeighbor.tile.cumulativeCost)
                 {
-                    curNeighbor.tile.totalEstCost = curNeighbor.tile.estDisToB + curNeighbor.tile.costSoFar;
+                    curryNeighbor.tile.totalEstCostToEnd = curryNeighbor.tile.estDistanceToEnd 
+                        + curryNeighbor.tile.cumulativeCost;
                 }
             }
-
-            if(curData.openList.Contains(curNeighbor.tile) == false)
+            //if the current data doesn't include the neighboring tile
+            if(curryData.openList.Contains(curryNeighbor.tile) == false)
             {
-                curData.openList.Add(curNeighbor.tile);
+                //include the neighboring tile
+                curryData.openList.Add(curryNeighbor.tile);
             }
         }
     }
@@ -297,7 +317,7 @@ public class TileMapController : MonoBehaviour {
     {
         for(int row = -1; row <= 1; row++)
         {
-            if (0 <= row + position.y && row + position.y < tileGrid.Count)
+            if ((row + position.y) >= 0 && (row + position.y) < tileGrid.Count)
             {
                 for (int col = -1; col <= 1; col++)
                 {
@@ -308,11 +328,11 @@ public class TileMapController : MonoBehaviour {
                             adjSquares[row+1][col+1].tile = tileGrid[row + position.y][col + position.x];
                             if(row!=0 && col !=0)
                             {
-                                adjSquares[row + 1][col + 1].isCorner = true;
+                                adjSquares[row + 1][col + 1].isDiagonalToCurrentTile = true;
                             }
                             else
                             {
-                                adjSquares[row + 1][col + 1].isCorner = false;
+                                adjSquares[row + 1][col + 1].isDiagonalToCurrentTile = false;
                             }
                         }
                     }
@@ -321,7 +341,7 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    void getTile<T>(out TileClass tile, int x, int y, T sourceMap) where T : IColorEncodedTileMap
+    void getTile(out TileClass tile, int x, int y) 
     {
         tile = new TileClass();
         Color tileData = sourceMap.getPixel(x, y);
@@ -333,13 +353,13 @@ public class TileMapController : MonoBehaviour {
         {
             tile.traverseable = true;
         }
-        tile.visted = false;
-        tile.cost = tileData.r;
+        tile.visited = false;
+        tile.traverseCost = tileData.r;
         tile.position.x = x;
         tile.position.y = y;
     }
 
-    Vector2Int getMaxSizes<T>(T sourceMap) where T : IColorEncodedTileMap
+    Vector2Int getMaxSizes()
     {
         return sourceMap.getMaxSizes();
     }
