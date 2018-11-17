@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.Text;
 using System;
 using System.Linq;
+using UnityEngine.Tilemaps;
 
 public class TileMapController : MonoBehaviour {
 
@@ -27,9 +28,16 @@ public class TileMapController : MonoBehaviour {
         public TileClass tile;
         public bool isCorner;
     }
-
+    private Tilemap tilemap;
+    private TilemapCollider2D tileMapCollider2D;
+    
     List<List<TileClass>> tileGrid = new List<List<TileClass>>();
+    private void Awake()
+    {
+        tilemap = GetComponent<Tilemap>();
+        tileMapCollider2D = GetComponent<TilemapCollider2D>();
 
+    }
 
     private void Reset()
     {
@@ -54,15 +62,17 @@ public class TileMapController : MonoBehaviour {
     void InitializeGrid()
     {
         TileClass tempTile;
-        Vector2Int boundry = getMaxSizes();
+        BoundsInt boundry = getMaxSizes();
         tileGrid.Capacity = boundry.x;
-        for (int r = 0; r < boundry.x; r++)
+        int offsetFromX = -boundry.yMin;
+        int offsetFromY = -boundry.xMin;
+        for (int r = boundry.xMin; r < boundry.xMax; r++)
         {
             tileGrid[r].Capacity = boundry.y;
-            for (int c = 0; c < boundry.y; c++)
+            for (int c = boundry.yMin; c < boundry.yMax; c++)
             {
                 getTile(out tempTile, c, r);
-                tileGrid[r][c] = tempTile;
+                tileGrid[r + offsetFromY][c + offsetFromX] = tempTile;
             }
         }
     }
@@ -321,32 +331,22 @@ public class TileMapController : MonoBehaviour {
         }
     }
 
-    void getTile<T>(out TileClass tile, int x, int y, T sourceMap) where T : IColorEncodedTileMap
+    void getTile(out TileClass tile, int x, int y)
     {
         tile = new TileClass();
-        Color tileData = sourceMap.getPixel(x, y);
-        if (tileData.r == 1)
-        {
-            tile.traverseable = false;
-        }
-        else
-        {
-            tile.traverseable = true;
-        }
+        
+        
+        tile.traverseable = tilemap.HasTile(new Vector3Int(x, y, 0));
         tile.visted = false;
-        tile.cost = tileData.r;
+        tile.cost = 1;
         tile.position.x = x;
         tile.position.y = y;
     }
 
-    Vector2Int getMaxSizes<T>(T sourceMap) where T : IColorEncodedTileMap
+    BoundsInt getMaxSizes()
     {
-        return sourceMap.getMaxSizes();
+        return (tilemap.cellBounds);
     }
 
-    interface IColorEncodedTileMap
-    {
-        Vector2Int getMaxSizes();
-        Color getPixel(int x, int y);
-    }
+   
 }
