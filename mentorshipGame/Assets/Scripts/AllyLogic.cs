@@ -28,7 +28,7 @@ public class AllyLogic : MonoBehaviour
         //getComponent.characterManager.Character.SpecialAttack;
 
         weaponCoolDownInSeconds = Mathf.Max(0, weaponCoolDownInSeconds - Time.deltaTime);
-        if ((Input.GetMouseButtonDown(0) && weaponCoolDownInSeconds == 0))
+        if (Input.GetMouseButtonDown(0) && weaponCoolDownInSeconds == 0)
         {
             FireAttack();
             weaponCoolDownInSeconds = weaponCoolDownInSecondsDefault;
