@@ -5,13 +5,24 @@ using UnityEngine.UI;
 using System.Text;
 using System;
 using System.Linq;
+using UnityEngine.Tilemaps;
+using UnityEditor;
 
 namespace cs
 {
+    [RequireComponent(typeof(Tilemap))]
     public class TileMapController : MonoBehaviour
     {
         public TileMapSceneSupervisor tileMapSupervisor = null;
         Sprite sprite;
+        Tilemap tilemap=null;
+        
+
+        private void Awake()
+        {
+            if(tilemap==null)
+                tilemap = GetComponent<Tilemap>();
+        }
 
         class TileClass
         {
@@ -21,7 +32,7 @@ namespace cs
             public float cumulativeCost;
             public float estDistanceToEnd;
             public float totalEstCostToEnd;
-            public Vector2Int position;
+            public Vector3Int position;
         }
 
         class AdjTileClassContainer
@@ -36,6 +47,7 @@ namespace cs
         private void Reset()
         {
             tileMapSupervisor = FindObjectOfType<TileMapSceneSupervisor>();
+            tilemap = GetComponent<Tilemap>();
         }
 
         private void OnEnable()
@@ -56,22 +68,24 @@ namespace cs
         void InitializeGrid()
         {
             TileClass tempTile;
-            Vector2Int boundary = getMaxSizes();
-            tileGrid.Capacity = boundary.x;
-            for (int tilePosY = 0; tilePosY < boundary.y; tilePosY++)
+            BoundsInt boundry = getMaxSizes();
+            tileGrid.Capacity = boundry.x;
+            int offsetFromX = -boundry.yMin;
+            int offsetFromY = -boundry.xMin;
+            for (int tilePosY = boundry.xMin; tilePosY < boundry.xMax; tilePosY++)
             {
-                tileGrid[tilePosY].Capacity = boundary.x;
-                for (int tilePosX = 0; tilePosX < boundary.y; tilePosX++)
+                tileGrid[tilePosY].Capacity = boundry.y;
+                for (int tilePosX = boundry.yMin; tilePosX < boundry.yMax; tilePosX++)
                 {
                     getTile(out tempTile, tilePosX, tilePosY);
-                    tileGrid[tilePosY][tilePosX] = tempTile;
+                    tileGrid[tilePosY + offsetFromY][tilePosX + offsetFromX] = tempTile;
                 }
             }
         }
 
-        float getOctileDistance(Vector2Int origin, Vector2Int target)
+        float getOctileDistance(Vector3Int origin, Vector3Int target)
         {
-            Vector2Int trajectory = target - origin;
+            Vector3Int trajectory = (target - origin);
             trajectory.y = Mathf.Abs(trajectory.y);
             trajectory.x = Mathf.Abs(trajectory.x);
             int minAxis = Mathf.Min(trajectory.x, trajectory.y);
@@ -80,9 +94,9 @@ namespace cs
             return diagonal + cardinal;
         }
 
-        List<Vector2Int> getPath(
-        Vector2Int origin,
-        Vector2Int target)
+        public List<Vector3Int> getPath(
+        Vector3Int origin,
+        Vector3Int target)
         {
             //initiializes every tile grid's cumulative cost and total estimated cost to end to infinity.
             //these fields will be updated once the traversing requires access to these grids.
@@ -163,7 +177,7 @@ namespace cs
 
             }
 
-            List<Vector2Int> path = new List<Vector2Int>();
+            List<Vector3Int> path = new List<Vector3Int>();
             if (pathNotFound == false)
             {
                 while (aStarData.currentTile != originTile)
@@ -174,6 +188,10 @@ namespace cs
                     getNewAdjacentListSquare(adjacentSquares, aStarData.currentTile.position);
                     aStarData.currentTile = getLowestAdjSquare(adjacentSquares);
                 }
+            }
+            else
+            {
+                path = null;
             }
             return path;
         }
@@ -298,11 +316,11 @@ namespace cs
             }
         }
 
-        public Vector2Int? getNextTile(Vector2Int origin, Vector2Int target)
+        public Vector3Int? getNextTile(Vector3Int origin, Vector3Int target)
         {
-            Vector2Int? nextTile;
-            List<Vector2Int> path = getPath(origin, target);
-            if (path.Count > 0)
+            Vector3Int? nextTile;
+            List<Vector3Int> path = getPath(origin, target);
+            if (path!=null && path.Count > 0)
             {
                 nextTile = path[0];
             }
@@ -315,7 +333,7 @@ namespace cs
 
         void getNewAdjacentListSquare(
         List<List<AdjTileClassContainer>> adjSquares,
-        Vector2Int position)
+        Vector3Int position)
         {
             for (int row = -1; row <= 1; row++)
             {
@@ -346,30 +364,22 @@ namespace cs
         void getTile(out TileClass tile, int x, int y)
         {
             tile = new TileClass();
-            /*Color tileData = sourceMap.getPixel(x, y);
-            if (tileData.r == 1)
-            {
-                tile.traverseable = false;
-            }
-            else
-            {
-                tile.traverseable = true;
-            }
+
+
+            tile.traverseable = tilemap.HasTile(new Vector3Int(x, y, 0));
             tile.visited = false;
-            tile.traverseCost = tileData.r;
-            tile.position.x = x;
-            tile.position.y = y;*/
+            tile.traverseCost = 1;
+            tile.position = new Vector3Int
+            {
+                x = x,
+                y = y,
+                z = 0,
+            };
         }
 
-        Vector2Int getMaxSizes()
+        BoundsInt getMaxSizes()
         {
-            return new Vector2Int();
-        }
-
-        interface IColorEncodedTileMap
-        {
-            Vector2Int getMaxSizes();
-            Color getPixel(int x, int y);
+            return (tilemap.cellBounds);
         }
     }
 }
