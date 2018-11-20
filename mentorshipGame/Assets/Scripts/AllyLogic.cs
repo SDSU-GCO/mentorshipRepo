@@ -5,26 +5,49 @@ using UnityEngine;
 
 public class AllyLogic : MonoBehaviour
 {
-	bool PlayerAttack = false;
-    bool SpAvailable = false;
+    //bool PlayerAttack = false;
+    //bool SpAvailable = false;
     public WeaponAttackController weaponAttack;
-
-
+    public bool partyLeader;
     float weaponCoolDownInSeconds;
     float weaponCoolDownInSecondsDefault;
+    public int playerHealth;
+    public int damage;
+    public float moveSpeed;
+    Vector2 velocity = new Vector2(0,0);
 
-    List<AllyLogic> AllyLogics = new List<AllyLogic>();
+    [HideInInspector]
+    public static List<AllyLogic> AllyLogics = new List<AllyLogic>();
 
     private void Awake()
     {
         weaponCoolDownInSeconds = weaponAttack.attackDelay;
         weaponCoolDownInSecondsDefault = weaponCoolDownInSeconds;
     }
+    private void OnEnable()
+    {
+        AllyLogics.Add(this);
+    }
+    private void OnDisable()
+    {
+        AllyLogics.Remove(this);
+    }
 
     //AllyLogics.Add
 
     void Update ()
     {
+        if (partyLeader == true)
+        {
+            float moveHorizontal = Input.GetAxis("Horizontal");
+            float moveVertical = Input.GetAxis("Vertical");
+
+            Rigidbody2D my2DRigidbody = GetComponent<Rigidbody2D>();
+            velocity.x = moveHorizontal * moveSpeed;
+            velocity.y = moveVertical * moveSpeed;
+            my2DRigidbody.velocity = velocity;
+        }
+        
         //getComponent.characterManager.Character.SpecialAttack;
 
         weaponCoolDownInSeconds = Mathf.Max(0, weaponCoolDownInSeconds - Time.deltaTime);
@@ -74,11 +97,26 @@ public class AllyLogic : MonoBehaviour
                 rotation += 180;
             }
             
-            Debug.Log("Rotation: " + rotation + "\n");
             GameObject child = Instantiate(weaponAttack.gameObject, spawnLocation, Quaternion.Euler(0, 0, rotation));
             child.transform.SetParent(transform);
 
 
         }
+    }
+    void CheckPartyLead()
+    {
+        if (this.partyLeader)
+        {
+            //this.NPCLogic.disable;
+            //PartyLeaderController.enable;
+        }
+
+    }
+
+    public void TakeDamage(int amount)
+    {
+        playerHealth -= amount;
+        if (playerHealth <= 0 && partyLeader == true)
+            Debug.Log("Game Over");
     }
 }
