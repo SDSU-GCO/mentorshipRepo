@@ -1,0 +1,116 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace GCO
+{
+    public class MoveCircle : MonoBehaviour
+    {
+
+        public Vector2 direction;
+        Rigidbody2D circlesrigidbody;
+        public float speed = 50;
+        public float rotationSpeed = 5;
+        float rotationVariable = 0;
+        //accually a circle
+        public GameObject triangle;
+        //not used yet
+        public GameObject Circle;
+        //accually a triagle
+        public GameObject Square;
+        public float offset = 5;
+        float weaponCoolDown = 0.5f;
+        float resetWeaponCoolDown;
+        // Use this for initialization
+        private void Start()
+        {
+
+            resetWeaponCoolDown = weaponCoolDown;
+        }
+
+        void Update()
+        {
+
+            //Melee attack
+            weaponCoolDown = Mathf.Max(0, weaponCoolDown - Time.deltaTime);
+
+            if (Input.GetMouseButtonDown(0))
+                if (weaponCoolDown == 0)
+                {
+                    {
+
+                        Vector3 mouseScreenPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);
+
+
+                        Vector2 mouseposition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+                        mouseposition = (mouseposition - (Vector2)transform.position).normalized * offset;
+
+                        GameObject childInstance = Instantiate(triangle, mouseposition + (Vector2)transform.position, transform.rotation);
+                        childInstance.transform.parent = transform;
+                        weaponCoolDown = resetWeaponCoolDown;
+
+                    }
+                }
+            //WIP Ranged Attack
+            float rotation = Mathf.Rad2Deg * (Mathf.Atan(direction.y / direction.x));
+            rotation += -90;
+            if (direction.x < 0)
+            {
+                rotation += 180;
+            }
+            if (Input.GetMouseButtonDown(1))
+                if (weaponCoolDown == 0)
+                {
+                    {
+
+                        Vector3 mouseScreenPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);
+
+
+                        Vector2 mouseposition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+                        mouseposition = (mouseposition - (Vector2)transform.position).normalized * offset;
+
+                        GameObject childInstance = Instantiate(Square, mouseposition + (Vector2)transform.position, Quaternion.Euler(0, 0, rotation));
+                        weaponCoolDown = resetWeaponCoolDown;
+                    }
+                }
+
+
+            Screen.orientation.Equals(Circle);
+            Vector2 myposition = transform.position;
+            Vector2 mousePosition = new Vector2((Input.mousePosition.x), (Input.mousePosition.y));
+            circlesrigidbody = GetComponent<Rigidbody2D>();
+            float movehorizontal = Input.GetAxis("Horizontal");
+            float moveVertical = Input.GetAxis("Vertical");
+            Vector2 verticalComponent = ((Vector2)transform.up) * moveVertical;
+            Vector2 horizontalComponent = ((Vector2)transform.right) * movehorizontal;
+            Vector2 calculatedVelocity = verticalComponent + horizontalComponent;
+            circlesrigidbody.velocity = calculatedVelocity * speed;
+            Vector2 screenOffset = new Vector2((Screen.width / 2), (Screen.height / 2));
+            Vector2 testVariable = mousePosition - screenOffset;
+
+            //Rotate Screen
+            if (Input.GetKey("q"))
+            {
+
+                rotationVariable = rotationVariable + (rotationSpeed);
+                if (rotationVariable > 360)
+                {
+                    rotationVariable = rotationVariable - 360;
+                }
+                transform.rotation = Quaternion.Euler(0, 0, rotationVariable);
+
+            }
+            if (Input.GetKey("e"))
+            {
+
+                rotationVariable = rotationVariable - (rotationSpeed);
+                if (rotationVariable < 0)
+                {
+                    rotationVariable = rotationVariable + 360;
+                }
+                transform.rotation = Quaternion.Euler(0, 0, rotationVariable);
+            }
+
+        }
+    }
+}
