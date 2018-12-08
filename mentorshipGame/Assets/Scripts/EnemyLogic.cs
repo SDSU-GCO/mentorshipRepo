@@ -5,7 +5,7 @@ using System.Linq;
 
 public class EnemyLogic : MonoBehaviour
 {
-
+    public bool isAgressive;
     Transform target;
     private float range;
     public float speed;
@@ -65,7 +65,10 @@ public class EnemyLogic : MonoBehaviour
         {
             Vector2 enVel = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
             enVel = enVel.normalized * speed;
-            GetComponent<Rigidbody2D>().velocity = -enVel;
+            if (isAgressive == true)
+            {
+                GetComponent<Rigidbody2D>().velocity = -enVel;
+            }
             Vector2.MoveTowards(enVel, target.transform.position, range);
 
             //check if the enemy is in melee range
@@ -73,7 +76,7 @@ public class EnemyLogic : MonoBehaviour
             {
                 //after 2 seconds, attack
                 secondsInRange = Mathf.Max(0, secondsInRange - Time.deltaTime);
-                if (secondsInRange == 0 && attackCooldown == 0)
+                if (secondsInRange == 0 && attackCooldown == 0 && isAgressive == true)
                 {
                     MeleeAttack();
                     attackCooldown = attackCooldownDefault;
