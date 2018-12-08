@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using cs;
+using System;
 
 public class EnemyLogic : MonoBehaviour
 {
 
     Transform target;
-    private float range;
+    private float distanceToTarget;
     public float speed;
     public int health;
     public WeaponAttackController enemyMelee;
@@ -17,26 +19,30 @@ public class EnemyLogic : MonoBehaviour
     float secondsInRangeDefault;
     public float moveRange;
     public float attackRange;
-
+    public float enemyRadius;
+    new Rigidbody2D rigidbody2D;
+    AStar2DPathfindingAgentController aStar2DPathfindingAgentController = null;
 
     private void Awake()
     {
         attackCooldownDefault = attackCooldown;
         secondsInRangeDefault = secondsInRange;
+        rigidbody2D = GetComponent<Rigidbody2D>();
+        aStar2DPathfindingAgentController = GetComponent<AStar2DPathfindingAgentController>();
     }
+    Vector2 velocityOffsetTarget = new Vector2(0,0);
+    float lerpProgress;
 
     void Update()
     {
         float minDistance = Mathf.Infinity;
         
-
-
         target = null;
         foreach (AllyLogic allyLogic in AllyLogic.AllyLogics)
         {
             //if (allyLogic.partyLeader == true)
                 //target = allyLogic.transform;
-            if (Vector2.Distance(transform.position, allyLogic.transform.position) < minDistance)
+            if (Vector2.Distance(transform.position, allyLogic.transform.position) < minDistance || target ==null)
             {
                 minDistance = Vector2.Distance(transform.position, allyLogic.transform.position);
                 target = allyLogic.transform;
@@ -44,21 +50,31 @@ public class EnemyLogic : MonoBehaviour
         }
 
 
-        range = Vector2.Distance(transform.position, target.transform.position);
+        distanceToTarget = Vector2.Distance(transform.position, target.transform.position);
         
         attackCooldown = Mathf.Max(0, attackCooldown - Time.deltaTime);
 
-
         //detect and move to player if in range
-        if (range <= moveRange)
+        if (distanceToTarget <= moveRange)
         {
-            Vector2 enVel = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
-            enVel = enVel.normalized * speed;
-            GetComponent<Rigidbody2D>().velocity = -enVel;
-            Vector2.MoveTowards(enVel, target.transform.position, range);
+            if(hasLineOfSight(target, enemyRadius))
+            {
+                Vector2 enemyVelocity = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
+                enemyVelocity = enemyVelocity.normalized * speed;
+                rigidbody2D.velocity = -enemyVelocity;
+            }
+            else
+            {
+                aStar2DPathfindingAgentController.target = target;
+                Vector2? temp = aStar2DPathfindingAgentController.getNextPoint();
+                if(temp.HasValue)
+                {
+                    rigidbody2D.velocity = Vector2.MoveTowards(transform.position, temp.Value, 1).normalized *speed;
+                }
+            }
 
             //check if the enemy is in melee range
-            if (range <= attackRange)
+            if (distanceToTarget <= attackRange)
             {
                 //after 2 seconds, attack
                 secondsInRange = Mathf.Max(0, secondsInRange - Time.deltaTime);
@@ -72,17 +88,30 @@ public class EnemyLogic : MonoBehaviour
             {
                 secondsInRange = Mathf.Min(secondsInRangeDefault, secondsInRange + Time.deltaTime);
             }
-
+            velocityOffsetTarget = rigidbody2D.velocity;
+            lerpProgress = 0;
         }
         //stop moving if out of range
         else
         {
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            rigidbody2D.velocity = Vector2.Lerp(velocityOffsetTarget, Vector2.zero, lerpProgress);
+            lerpProgress += (2f * Time.deltaTime);
         }
 
 
     }
 
+    private bool hasLineOfSight(Transform target, float radius)
+    {
+        RaycastHit2D raycastHit2D = Physics2D.CircleCast(transform.position, radius, Vector2.MoveTowards(transform.position, target.position, 1).normalized);
+
+        if (raycastHit2D.collider != null && raycastHit2D.collider.gameObject!=null &&  raycastHit2D.collider.gameObject == target.gameObject)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
 
     void MeleeAttack()
     {

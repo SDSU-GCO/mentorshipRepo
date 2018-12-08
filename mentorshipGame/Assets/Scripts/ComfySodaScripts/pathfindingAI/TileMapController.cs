@@ -65,20 +65,39 @@ namespace cs
             }
         }
 
+        //int? offsetFromX;
+        //int? offsetFromY;
+        BoundsInt boundry;
+
         void InitializeGrid()
         {
-            TileClass tempTile;
-            BoundsInt boundry = getMaxSizes();
-            tileGrid.Capacity = boundry.x;
-            int offsetFromX = -boundry.yMin;
-            int offsetFromY = -boundry.xMin;
-            for (int tilePosY = boundry.xMin; tilePosY < boundry.xMax; tilePosY++)
+            boundry = getMaxSizes();
+            Debug.Log("Boundary X: (" + boundry.xMin + ", " + boundry.xMax + ")");
+            Debug.Log("Boundary Y: (" + boundry.yMin + ", " + boundry.yMax + ")");
+            //offsetFromX = -boundry.yMin;
+            //offsetFromY = -boundry.xMin;
+            //for (int tilePosY = boundry.xMin; tilePosY < boundry.xMax; tilePosY++)
+            //{
+            //    tileGrid.Add(new List<TileClass>());
+            //    for (int tilePosX = boundry.yMin; tilePosX < boundry.yMax; tilePosX++)
+            //    {
+            //        TileClass tempTile = getTile(tilePosX, tilePosY);
+            //        tileGrid[tilePosY + (int)offsetFromY].Add(tempTile);
+            //        //tileGrid[tilePosY + (int)offsetFromY][tilePosX + (int)offsetFromX] = tempTile;
+            //    }
+            //}
+
+
+
+            
+            //Tyler Version
+            for (int y = 0; y <= boundry.yMax - boundry.yMin; y++)
             {
-                tileGrid[tilePosY].Capacity = boundry.y;
-                for (int tilePosX = boundry.yMin; tilePosX < boundry.yMax; tilePosX++)
+                tileGrid.Add(new List<TileClass>());
+                for (int x = 0; x <= boundry.xMax - boundry.xMin; x++)
                 {
-                    getTile(out tempTile, tilePosX, tilePosY);
-                    tileGrid[tilePosY + offsetFromY][tilePosX + offsetFromX] = tempTile;
+                    TileClass tempTile2 = getTile(x + boundry.xMin, y + boundry.yMin);
+                    tileGrid[y].Add(tempTile2);
                 }
             }
         }
@@ -109,19 +128,25 @@ namespace cs
             aStarData.openList = new HashSet<TileClass>();
             aStarData.closedList = new HashSet<TileClass>();
 
-            aStarData.currentTile = tileGrid[origin.y][origin.x];
+            aStarData.currentTile = tileGrid[origin.y - boundry.yMin][origin.x - boundry.xMin];
             aStarData.currentTile.visited = true;
             aStarData.currentTile.cumulativeCost = 0;
             aStarData.currentTile.totalEstCostToEnd = aStarData.currentTile.estDistanceToEnd;
             aStarData.closedList.Add(aStarData.currentTile);
 
-            TileClass targetTile = tileGrid[target.y][target.x];
-            TileClass originTile = tileGrid[origin.y][origin.x];
+            TileClass targetTile = tileGrid[target.y - boundry.yMin][target.x - boundry.xMin];
+            TileClass originTile = tileGrid[origin.y - boundry.yMin][origin.x - boundry.xMin];
 
             List<List<AdjTileClassContainer>> adjacentSquares = new List<List<AdjTileClassContainer>>();
-            adjacentSquares.ForEach(v => v = new List<AdjTileClassContainer>());
-
-            adjacentSquares.ForEach(v => v.ForEach(a => a = new AdjTileClassContainer()));
+            for(int i = 0; i<3;i++)
+            {
+                adjacentSquares.Add(new List<AdjTileClassContainer>());
+                for (int j = 0; j < 3; j++)
+                {
+                    adjacentSquares[i].Add(new AdjTileClassContainer());
+                }
+            }
+            
             adjacentSquares.ForEach(v => v.ForEach(a => a.tile = null));
             adjacentSquares.ForEach(v => v.ForEach(a => a.isDiagonalToCurrentTile = false));
             getNewAdjacentListSquare(adjacentSquares, origin);
@@ -308,7 +333,7 @@ namespace cs
                     }
                 }
                 //if the current data doesn't include the neighboring tile
-                if (curryData.openList.Contains(curryNeighbor.tile) == false)
+                if (curryNeighbor.tile!=null && curryData.openList.Contains(curryNeighbor.tile) == false)
                 {
                     //include the neighboring tile
                     curryData.openList.Add(curryNeighbor.tile);
@@ -337,15 +362,16 @@ namespace cs
         {
             for (int row = -1; row <= 1; row++)
             {
-                if ((row + position.y) >= 0 && (row + position.y) < tileGrid.Count)
+                if ((row + position.y - boundry.yMin) > 0 && (row + position.y - boundry.yMin) < tileGrid.Count)
                 {
                     for (int col = -1; col <= 1; col++)
                     {
-                        if (0 <= col + position.x && col + position.x < tileGrid[0].Count)
+                        if (0 < col + position.x - boundry.xMin && col + position.x - boundry.xMin < tileGrid[0].Count)
                         {
                             if (!(row == 0 && col == 0))
                             {
-                                adjSquares[row + 1][col + 1].tile = tileGrid[row + position.y][col + position.x];
+                                
+                                adjSquares[row + 1][col + 1].tile = tileGrid[row + position.y - boundry.yMin][col + position.x - boundry.xMin];
                                 if (row != 0 && col != 0)
                                 {
                                     adjSquares[row + 1][col + 1].isDiagonalToCurrentTile = true;
@@ -361,9 +387,9 @@ namespace cs
             }
         }
 
-        void getTile(out TileClass tile, int x, int y)
+        TileClass getTile(int x, int y)
         {
-            tile = new TileClass();
+            TileClass tile = new TileClass();
 
 
             tile.traverseable = tilemap.HasTile(new Vector3Int(x, y, 0));
@@ -375,6 +401,7 @@ namespace cs
                 y = y,
                 z = 0,
             };
+            return tile;
         }
 
         BoundsInt getMaxSizes()

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using cs;
 //using WeaponSupervisor;
 
 public class AllyLogic : MonoBehaviour
@@ -15,6 +16,7 @@ public class AllyLogic : MonoBehaviour
     public int playerHealth;
     public int damage;
     public float moveSpeed;
+    public float enemySize=0.5f;
     Vector2 velocity = new Vector2(0,0);
     public float followDistanceMax;
     public float followDistanceMin;
@@ -23,6 +25,7 @@ public class AllyLogic : MonoBehaviour
     Vector2 forcesFromAllies = new Vector2(0, 0);
     [SerializeField]
     float forceOfNearbyAllies = 1;
+    AStar2DPathfindingAgentController aStar2DPathfindingAgentController;
 
     [HideInInspector]
     public static List<AllyLogic> AllyLogics = new List<AllyLogic>();
@@ -33,6 +36,7 @@ public class AllyLogic : MonoBehaviour
         weaponCoolDownInSeconds = weaponAttack.attackDelay;
         weaponCoolDownInSecondsDefault = weaponCoolDownInSeconds;
         my2DRigidbody = GetComponent<Rigidbody2D>();
+        aStar2DPathfindingAgentController = GetComponent<AStar2DPathfindingAgentController>();
     }
     private void OnEnable()
     {
@@ -71,8 +75,9 @@ public class AllyLogic : MonoBehaviour
             {
 
                 float distance = Vector2.Distance(partyLeader.transform.position, transform.position);
-                if (canSeeTargetAlly(partyLeader))
+                if (canSeeTargetAlly(partyLeader, enemySize))
                 {
+                    Debug.Log("sees it");
                     if (distance < followDistanceMin)
                     {
                         //back off
@@ -88,11 +93,17 @@ public class AllyLogic : MonoBehaviour
                         my2DRigidbody.velocity = (((Vector2)partyLeader.transform.position) - ((Vector2)transform.position)).normalized * moveSpeed;
                     }
                 }
-                else
+                else if(aStar2DPathfindingAgentController.pointIsInGrid(transform.position) && aStar2DPathfindingAgentController.pointIsInGrid(partyLeader.transform.position))
                 {
+                    Debug.Log("blind");
                     //path to ally
-                    Vector2 nextPoint = getNextPoint;
-                    my2DRigidbody.velocity = (nextPoint - (Vector2)transform.position).normalized * moveSpeed;
+                    aStar2DPathfindingAgentController.target = partyLeader.transform;
+                    Vector2? nextPoint = aStar2DPathfindingAgentController.getNextPoint();
+                    if(nextPoint != null)
+                    {
+                        Vector2 nextPosition = (Vector2)nextPoint;
+                        my2DRigidbody.velocity = (nextPosition - (Vector2)transform.position).normalized * moveSpeed;
+                    }
                 }
             }
         }
@@ -139,23 +150,30 @@ public class AllyLogic : MonoBehaviour
     }
 
     Vector2 offset = new Vector2(0, 0);
-    GameObject gameObjectTarget = new GameObject();
-    CircleCollider2D circleCollider2D = null;
+    GameObject gameObjectTarget;
+    CircleCollider2D circleCollider2D;
+
+    [SerializeField]
+    GameObject collisionTargetPrefab = null;
 
     [SerializeField]
     float repulsionDistance;
 
-    private bool canSeeTargetAlly(AllyLogic ally)
+    private bool canSeeTargetAlly(AllyLogic ally, float radius)
     {
+        if(gameObjectTarget == null)
+        {
+            gameObjectTarget = Instantiate(collisionTargetPrefab);
+        }
+
+
         bool canSeeTarget = false;
         gameObjectTarget.SetActive(true);
         
         CircleCollider2D temp = gameObjectTarget.GetComponent<CircleCollider2D>();
-        if (temp == null)
-            circleCollider2D = gameObjectTarget.AddComponent<CircleCollider2D>();
-        else
-            circleCollider2D = temp;
-        
+
+        Debug.Assert(temp == null, "Error: Target prefab MUST have a circle collider");
+
         circleCollider2D.enabled = true;
         circleCollider2D.radius = 0.05f;
         circleCollider2D.offset = offset;
@@ -166,8 +184,7 @@ public class AllyLogic : MonoBehaviour
         LayerMask layerMask = LayerMask.NameToLayer("Enemy");
         layerMask |= ally.gameObject.layer;
         layerMask = ~layerMask;
-
-        RaycastHit2D raycastHit2D = Physics2D.Raycast(transform.position, (Vector2)ally.transform.position - (Vector2)transform.position, Mathf.Infinity, layerMask);
+        RaycastHit2D raycastHit2D = Physics2D.CircleCast(transform.position, radius, (Vector2)ally.transform.position - (Vector2)transform.position, Mathf.Infinity, layerMask);
         if( raycastHit2D.collider == circleCollider2D)
         {
             canSeeTarget = true;

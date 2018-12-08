@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 114240578047074002}
   - component: {fileID: 114712151150523882}
   - component: {fileID: 58051110493533928}
+  - component: {fileID: 114172470482013822}
   m_Layer: 0
   m_Name: Party Member
   m_TagString: ally
@@ -79,6 +80,20 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &114172470482013822
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1282822884322212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e08f75bce9c31784db03d7a686e1f2ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileMapSupervisor: {fileID: 0}
+  tileMapController: {fileID: 0}
+  target: {fileID: 0}
 --- !u!114 &114240578047074002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -96,6 +111,12 @@ MonoBehaviour:
   playerHealth: 0
   damage: 0
   moveSpeed: 0
+  followDistanceMax: 0
+  followDistanceMin: 0
+  forceOfNearbyAllies: 1
+  collisionTargetPrefab: {fileID: 1629793693583370, guid: dc273852bf114a14a8c60ad963708b51,
+    type: 2}
+  repulsionDistance: 0
 --- !u!114 &114712151150523882
 MonoBehaviour:
   m_ObjectHideFlags: 1
