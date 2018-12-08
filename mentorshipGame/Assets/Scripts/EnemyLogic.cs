@@ -40,6 +40,17 @@ public class EnemyLogic : MonoBehaviour
             {
                 minDistance = Vector2.Distance(transform.position, allyLogic.transform.position);
                 target = allyLogic.transform;
+                
+                        
+                  Vector3 enemyDirection = target.position - transform.position;
+                  float enemyRotation = Mathf.Rad2Deg * (Mathf.Atan(enemyDirection.y / enemyDirection.x));
+                  enemyRotation += -90;
+                  if (enemyDirection.x < 0)
+                  {
+                      enemyRotation += 180;
+                  }
+                transform.rotation = Quaternion.Euler(new Vector3(0, 0, enemyRotation));
+                
             }
         }
 
