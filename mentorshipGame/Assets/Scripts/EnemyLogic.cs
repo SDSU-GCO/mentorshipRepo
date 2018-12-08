@@ -70,13 +70,15 @@ public class EnemyLogic : MonoBehaviour
                 GetComponent<Rigidbody2D>().velocity = -enVel;
             }
             Vector2.MoveTowards(enVel, target.transform.position, range);
+            GetComponent<Animator>().SetBool("ChargeRange", true);
 
             //check if the enemy is in melee range
             if (range <= attackRange)
             {
                 //after 2 seconds, attack
                 secondsInRange = Mathf.Max(0, secondsInRange - Time.deltaTime);
-                if (secondsInRange == 0 && attackCooldown == 0 && isAgressive == true)
+                GetComponent<Animator>().SetBool("MeleeRange", true);
+                if (secondsInRange == 0 && attackCooldown == 0)
                 {
                     MeleeAttack();
                     attackCooldown = attackCooldownDefault;
@@ -85,6 +87,7 @@ public class EnemyLogic : MonoBehaviour
             else
             {
                 secondsInRange = Mathf.Min(secondsInRangeDefault, secondsInRange + Time.deltaTime);
+                GetComponent<Animator>().SetBool("MeleeRange", false);
             }
 
         }
@@ -92,6 +95,8 @@ public class EnemyLogic : MonoBehaviour
         else
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            GetComponent<Animator>().SetBool("ChargeRange", false);
+            GetComponent<Animator>().SetBool("MeleeRange", false);
         }
 
 
