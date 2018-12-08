@@ -29,7 +29,6 @@ public class AllyLogic : MonoBehaviour
 
     [HideInInspector]
     public static List<AllyLogic> AllyLogics = new List<AllyLogic>();
-    
 
     private void Awake()
     {
@@ -53,15 +52,16 @@ public class AllyLogic : MonoBehaviour
     public float rotationSpeed = 5;
     void Update ()
     {
-
+  
         if (partyLeader == true)
         {
             float moveHorizontal = Input.GetAxis("Horizontal");
             float moveVertical = Input.GetAxis("Vertical");
 
-            velocity.x = moveHorizontal * moveSpeed;
-            velocity.y = moveVertical * moveSpeed;
-            my2DRigidbody.velocity = velocity;
+            Vector2 verticalComponent = ((Vector2)transform.up) * moveVertical;
+            Vector2 horizontalComponent = ((Vector2)transform.right) * moveHorizontal;
+            Vector2 calculatedVelocity = verticalComponent + horizontalComponent;
+            my2DRigidbody.velocity = calculatedVelocity * moveSpeed;
 
 
             weaponCoolDownInSeconds = Mathf.Max(0, weaponCoolDownInSeconds - Time.deltaTime);

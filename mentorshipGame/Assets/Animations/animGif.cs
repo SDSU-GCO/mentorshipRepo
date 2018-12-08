@@ -36,10 +36,7 @@ public class animGif : StateMachineBehaviour
 
     private Material mat;
 
-    public void OnStateEnter()
-    {
-        mat = GetComponent<SpriteRenderer>().material;
-    }
+  
 
     void Update()
     {
