@@ -12,9 +12,12 @@ public class AllyLogic : MonoBehaviour
     public bool partyLeader;
     float weaponCoolDownInSeconds;
     float weaponCoolDownInSecondsDefault;
+    float rangedCoolDownInSeconds;
+    float rangedCoolDownInSecondsDefault;
     public int playerHealth;
     public int damage;
     public float moveSpeed;
+    public WeaponAttackController rangedAttack;
     Vector2 velocity = new Vector2(0,0);
     public float followDistanceMax;
     public float followDistanceMin;
@@ -30,8 +33,10 @@ public class AllyLogic : MonoBehaviour
 
     private void Awake()
     {
-        weaponCoolDownInSeconds = weaponAttack.attackDelay;
+        weaponCoolDownInSeconds = weaponAttack.AttackDelay;
         weaponCoolDownInSecondsDefault = weaponCoolDownInSeconds;
+        rangedCoolDownInSeconds = rangedAttack.AttackDelay;
+        rangedCoolDownInSecondsDefault = rangedCoolDownInSeconds;
         my2DRigidbody = GetComponent<Rigidbody2D>();
     }
     private void OnEnable()
@@ -44,9 +49,11 @@ public class AllyLogic : MonoBehaviour
     }
 
     //AllyLogics.Add
-
+    float rotationVariable = 0;
+    public float rotationSpeed = 5;
     void Update ()
     {
+
         if (partyLeader == true)
         {
             float moveHorizontal = Input.GetAxis("Horizontal");
@@ -58,15 +65,43 @@ public class AllyLogic : MonoBehaviour
 
 
             weaponCoolDownInSeconds = Mathf.Max(0, weaponCoolDownInSeconds - Time.deltaTime);
+            rangedCoolDownInSeconds = Mathf.Max(0, rangedCoolDownInSeconds - Time.deltaTime);
             if (Input.GetMouseButtonDown(0) && weaponCoolDownInSeconds == 0)
             {
                 FireAttack();
                 weaponCoolDownInSeconds = weaponCoolDownInSecondsDefault;
             }
+            if (Input.GetMouseButtonDown(1) && rangedCoolDownInSeconds == 0)
+            {
+                FireRangedAttack();
+                rangedCoolDownInSeconds = rangedCoolDownInSecondsDefault;
+            }
+            //Rotate Screen
+            if (Input.GetKey("q"))
+            {
+
+                rotationVariable = rotationVariable + (rotationSpeed);
+                if (rotationVariable > 360)
+                {
+                    rotationVariable = rotationVariable - 360;
+                }
+                transform.rotation = Quaternion.Euler(0, 0, rotationVariable);
+
+            }
+            if (Input.GetKey("e"))
+            {
+
+                rotationVariable = rotationVariable - (rotationSpeed);
+                if (rotationVariable < 0)
+                {
+                    rotationVariable = rotationVariable + 360;
+                }
+                transform.rotation = Quaternion.Euler(0, 0, rotationVariable);
+            }
         }
         else
         {
-            AllyLogic partyLeader = GetPartyLeader();
+            /*AllyLogic partyLeader = GetPartyLeader();
             if (partyLeader != null)
             {
 
@@ -103,7 +138,7 @@ public class AllyLogic : MonoBehaviour
             Vector2 tempForce = new Vector2(forceOfNearbyAllies, forceOfNearbyAllies);
             tempForce.Scale( ((Vector2)transform.position - (Vector2)ally.transform.position));
             forcesFromAllies += tempForce;
-        }
+        }*/
 
         //getComponent.characterManager.Character.SpecialAttack;
 
@@ -125,7 +160,7 @@ public class AllyLogic : MonoBehaviour
         **/
 	}
 
-    private void getNearbyAllies()
+    /*private void getNearbyAllies()
     {
         nearbyAllies.Clear();
         foreach(AllyLogic ally in AllyLogics)
@@ -136,16 +171,16 @@ public class AllyLogic : MonoBehaviour
             }
         }
         return;
-    }
+    */}
 
-    Vector2 offset = new Vector2(0, 0);
-    GameObject gameObjectTarget = new GameObject();
+    public float offset = 1.5f;
+    //GameObject gameObjectTarget = new GameObject();
     CircleCollider2D circleCollider2D = null;
 
     [SerializeField]
     float repulsionDistance;
 
-    private bool canSeeTargetAlly(AllyLogic ally)
+    /*private bool canSeeTargetAlly(AllyLogic ally)
     {
         bool canSeeTarget = false;
         gameObjectTarget.SetActive(true);
@@ -178,7 +213,7 @@ public class AllyLogic : MonoBehaviour
         gameObjectTarget.SetActive(false);
 
         return canSeeTarget;
-    }
+    }*/
 
     AllyLogic GetPartyLeader()
     {
@@ -219,6 +254,37 @@ public class AllyLogic : MonoBehaviour
 
 
         }
+    }
+
+    void FireRangedAttack()
+    {
+        
+        if (rangedCoolDownInSeconds == 0)
+        {
+                
+
+            Vector3 mouseScreenPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);
+
+
+            Vector2 mouseposition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+            mouseposition = (mouseposition - (Vector2)transform.position).normalized * offset;
+
+
+
+            Vector3 shoot = (new Vector3(mouseposition.x, mouseposition.y, 0) - transform.position).normalized;
+            GameObject childInstance = Instantiate(rangedAttack.gameObject, mouseposition + (Vector2)transform.position, transform.rotation);
+            childInstance.GetComponent<Rigidbody2D>().velocity = rangedAttack.speed * mouseposition.normalized;
+
+            //GameObject childInstance = Instantiate(Square, shoot, Quaternion.FromToRotation(transform.position, shoot));
+
+
+            rangedCoolDownInSeconds = rangedCoolDownInSecondsDefault;
+
+            //GameObject Target = Instantiate(Square, mouseposition + (Vector2)transform.position, transform.rotation);
+            //rangedCoolDownInSeconds = rangedCoolDownInSecondsDefault;
+                
+        }
+        
     }
 
     public void TakeDamage(int amount)
