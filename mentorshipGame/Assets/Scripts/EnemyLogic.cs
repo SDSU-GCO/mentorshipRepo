@@ -5,7 +5,7 @@ using System.Linq;
 
 public class EnemyLogic : MonoBehaviour
 {
-
+    public bool isAgressive;
     Transform target;
     private float range;
     public float speed;
@@ -40,6 +40,17 @@ public class EnemyLogic : MonoBehaviour
             {
                 minDistance = Vector2.Distance(transform.position, allyLogic.transform.position);
                 target = allyLogic.transform;
+                
+                        
+                  Vector3 enemyDirection = target.position - transform.position;
+                  float enemyRotation = Mathf.Rad2Deg * (Mathf.Atan(enemyDirection.y / enemyDirection.x));
+                  enemyRotation += -90;
+                  if (enemyDirection.x < 0)
+                  {
+                      enemyRotation += 180;
+                  }
+                transform.rotation = Quaternion.Euler(new Vector3(0, 0, enemyRotation));
+                
             }
         }
 
@@ -54,7 +65,10 @@ public class EnemyLogic : MonoBehaviour
         {
             Vector2 enVel = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
             enVel = enVel.normalized * speed;
-            GetComponent<Rigidbody2D>().velocity = -enVel;
+            if (isAgressive == true)
+            {
+                GetComponent<Rigidbody2D>().velocity = -enVel;
+            }
             Vector2.MoveTowards(enVel, target.transform.position, range);
             GetComponent<Animator>().SetBool("ChargeRange", true);
 
@@ -63,8 +77,12 @@ public class EnemyLogic : MonoBehaviour
             {
                 //after 2 seconds, attack
                 secondsInRange = Mathf.Max(0, secondsInRange - Time.deltaTime);
+//<<<<<<< HEAD
                 GetComponent<Animator>().SetBool("MeleeRange", true);
                 if (secondsInRange == 0 && attackCooldown == 0)
+//=======
+                if (secondsInRange == 0 && attackCooldown == 0 && isAgressive == true)
+//>>>>>>> 3ead4a6132ba0772c4b8e9230eb9b75fb3fbaf17
                 {
                     MeleeAttack();
                     attackCooldown = attackCooldownDefault;
