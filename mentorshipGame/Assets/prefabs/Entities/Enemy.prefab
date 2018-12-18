@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 114748922883520584}
   - component: {fileID: 50392160936175598}
   - component: {fileID: 58236453109045554}
+  - component: {fileID: 95219035243261120}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: enemy
@@ -78,6 +79,24 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!95 &95219035243261120
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1431935787566518}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114748922883520584
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -89,6 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c60b6e5c7d865b544b7e0f52d143eb98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isAgressive: 0
   speed: 4.5
   health: 2
   enemyMelee: {fileID: 114387352919150506, guid: 90268ad37812f364180134b208dc855e,

@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 212578848642561752}
   - component: {fileID: 95847341194294444}
   m_Layer: 0
-  m_Name: slimeAttack
+  m_Name: slimeAnim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
