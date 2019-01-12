@@ -108,7 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c60b6e5c7d865b544b7e0f52d143eb98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isAgressive: 0
+  isAgressive: 1
   speed: 4.5
   health: 2
   enemyMelee: {fileID: 114387352919150506, guid: 90268ad37812f364180134b208dc855e,
