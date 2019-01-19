@@ -77,7 +77,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.4
 --- !u!114 &114240578047074002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -101,7 +101,7 @@ MonoBehaviour:
   followDistanceMin: 0
   forceOfNearbyAllies: 1
   rotationSpeed: 5
-  offset: 1.5
+  offset: 1.2
   repulsionDistance: 0
 --- !u!212 &212378970575498762
 SpriteRenderer:
