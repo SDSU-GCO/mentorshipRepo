@@ -125,14 +125,14 @@ namespace cs
             tileGrid.ForEach(v => v.ForEach(t => t.estDistanceToEnd = getOctileDistance(t.position, target)));
 
             AStarData aStarData = new AStarData();
-            aStarData.openList = new HashSet<TileClass>();
-            aStarData.closedList = new HashSet<TileClass>();
+            aStarData.openList = new Dictionary<Vector3Int, TileClass>();
+            aStarData.closedList = new Dictionary<Vector3Int, TileClass>();
 
             aStarData.currentTile = tileGrid[origin.y - boundry.yMin][origin.x - boundry.xMin];
             aStarData.currentTile.visited = true;
             aStarData.currentTile.cumulativeCost = 0;
             aStarData.currentTile.totalEstCostToEnd = aStarData.currentTile.estDistanceToEnd;
-            aStarData.closedList.Add(aStarData.currentTile);
+            aStarData.closedList.Add(aStarData.currentTile.position, aStarData.currentTile);
 
             TileClass targetTile = tileGrid[target.y - boundry.yMin][target.x - boundry.xMin];
             TileClass originTile = tileGrid[origin.y - boundry.yMin][origin.x - boundry.xMin];
@@ -158,7 +158,7 @@ namespace cs
             while (pathNotFound && aStarData.currentTile != null)
             {
                 TileClass minTile = null;
-                foreach (TileClass tile in aStarData.openList)
+                foreach (TileClass tile in aStarData.openList.Values)
                 {
                     if (minTile == null || minTile.totalEstCostToEnd < tile.totalEstCostToEnd)
                     {
@@ -170,7 +170,11 @@ namespace cs
                 {
                     aStarData.currentTile.visited = true;
                     aStarData.currentTile.totalEstCostToEnd = aStarData.currentTile.estDistanceToEnd + aStarData.currentTile.cumulativeCost;
-                    aStarData.closedList.Add(aStarData.currentTile);
+
+                    if(aStarData.currentTile!=null && aStarData.closedList.ContainsKey(aStarData.currentTile.position))
+                    {
+                        aStarData.closedList.Add(aStarData.currentTile.position, aStarData.currentTile);
+                    }
 
 
                     if (aStarData.currentTile == targetTile)
@@ -184,7 +188,7 @@ namespace cs
                         adjacentSquaresToOpenList(adjacentSquares, aStarData);
 
                         TileClass nextNode = null;
-                        foreach (TileClass tileClass in aStarData.openList)
+                        foreach (TileClass tileClass in aStarData.openList.Values)
                         {
                             if (nextNode == null || tileClass.totalEstCostToEnd < nextNode.totalEstCostToEnd)
                             {
@@ -193,8 +197,11 @@ namespace cs
                         }
                         if (nextNode != null)
                         {
-                            aStarData.openList.Remove(nextNode);
-                            aStarData.closedList.Add(nextNode);
+                            aStarData.openList.Remove(nextNode.position);
+                            if(nextNode!=null && aStarData.closedList.ContainsKey(nextNode.position) != true)
+                            {
+                                aStarData.closedList.Add(nextNode.position, nextNode);
+                            }
                         }
                         aStarData.currentTile = nextNode;
                     }
@@ -245,8 +252,8 @@ namespace cs
         /// </summary>
         class AStarData
         {
-            public HashSet<TileClass> openList;
-            public HashSet<TileClass> closedList;
+            public Dictionary<Vector3Int, TileClass> openList;
+            public Dictionary<Vector3Int, TileClass> closedList;
             public TileClass currentTile;
         }
 
@@ -290,7 +297,7 @@ namespace cs
         AdjTileClassContainer curryNeighbor,
         AStarData curryData)
         {
-            if (curryData.closedList.Contains(curryNeighbor.tile) == false)
+            if (curryData.closedList.ContainsKey(curryNeighbor.tile.position) == false)
             {
                 //if the current neighboring tile is not diagonally positioned to the current tile
                 if (curryNeighbor.isDiagonalToCurrentTile == false)
@@ -333,10 +340,10 @@ namespace cs
                     }
                 }
                 //if the current data doesn't include the neighboring tile
-                if (curryNeighbor.tile!=null && curryData.openList.Contains(curryNeighbor.tile) == false)
+                if (curryNeighbor.tile!=null && curryData.openList.ContainsKey(curryNeighbor.tile.position) == false)
                 {
                     //include the neighboring tile
-                    curryData.openList.Add(curryNeighbor.tile);
+                    curryData.openList.Add(curryNeighbor.tile.position, curryNeighbor.tile);
                 }
             }
         }
