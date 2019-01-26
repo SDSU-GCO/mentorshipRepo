@@ -10,12 +10,14 @@ public class AllyLogic : MonoBehaviour
     //bool SpAvailable = false;
     public WeaponAttackController weaponAttack;
     public bool partyLeader;
+    public static AllyLogic partyLeaderObject;
     float weaponCoolDownInSeconds;
     float weaponCoolDownInSecondsDefault;
     float rangedCoolDownInSeconds;
     float rangedCoolDownInSecondsDefault;
     public int playerHealth;
     public int damage;
+    public int charachterID;
     public float moveSpeed;
     public WeaponAttackController rangedAttack;
     Vector2 velocity = new Vector2(0,0);
@@ -103,6 +105,12 @@ public class AllyLogic : MonoBehaviour
         }
         else
         {
+            //applies to allies
+
+
+            }
+
+
             /*AllyLogic partyLeader = GetPartyLeader();
             if (partyLeader != null)
             {
@@ -219,6 +227,8 @@ public class AllyLogic : MonoBehaviour
 
     AllyLogic GetPartyLeader()
     {
+        
+
         AllyLogic partylead = null;
         foreach(AllyLogic allyLogic in AllyLogics)
         {
