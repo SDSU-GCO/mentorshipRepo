@@ -14,11 +14,21 @@ public class areaCamToggler : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        areaCam.enabled = true;
+        AllyLogic allyLogic = collision.gameObject.GetComponent<AllyLogic>();
+
+        if (allyLogic != null && allyLogic.partyLeader == true)
+        {
+            areaCam.enabled = true;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        areaCam.enabled = false;
+        AllyLogic allyLogic = collision.gameObject.GetComponent<AllyLogic>();
+
+        if (allyLogic != null && allyLogic.partyLeader == true)
+        {
+            areaCam.enabled = false;
+        }
     }
 }

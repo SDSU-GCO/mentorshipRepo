@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 114468466129798216}
   - component: {fileID: 60207934766436614}
   - component: {fileID: 95498704463362952}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: friendlyMelee
   m_TagString: Untagged
   m_Icon: {fileID: 0}

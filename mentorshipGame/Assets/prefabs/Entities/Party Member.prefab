@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 50771115998861724}
   - component: {fileID: 114240578047074002}
   - component: {fileID: 58051110493533928}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Party Member
   m_TagString: ally
   m_Icon: {fileID: 0}
