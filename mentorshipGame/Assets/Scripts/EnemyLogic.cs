@@ -17,6 +17,8 @@ public class EnemyLogic : MonoBehaviour
     float secondsInRangeDefault;
     public float moveRange;
     public float attackRange;
+    List<EnemyLogic> enemyLogics = new List<EnemyLogic>();
+
 
 
     private void Awake()
