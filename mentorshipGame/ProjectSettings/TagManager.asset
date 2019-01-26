@@ -17,8 +17,8 @@ TagManager:
   - 
   - Ally
   - Enemy
-  - 
-  - 
+  - AllyAttack
+  - EnemyAttack
   - 
   - 
   - 
