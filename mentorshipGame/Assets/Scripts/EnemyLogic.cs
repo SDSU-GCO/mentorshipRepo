@@ -18,6 +18,7 @@ public class EnemyLogic : MonoBehaviour
     public float moveRange;
     public float attackRange;
     public static List<EnemyLogic> enemyLogics = new List<EnemyLogic>();
+    public bool inRange { get; private set; }
 
     private void OnEnable()
     {
@@ -75,6 +76,7 @@ public class EnemyLogic : MonoBehaviour
         {
             Vector2 enVel = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
             enVel = enVel.normalized * speed;
+            inRange = true;
             if (isAgressive == true)
             {
                 GetComponent<Rigidbody2D>().velocity = -enVel;
@@ -107,6 +109,7 @@ public class EnemyLogic : MonoBehaviour
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             GetComponent<Animator>().SetBool("ChargeRange", false);
             GetComponent<Animator>().SetBool("MeleeRange", false);
+            inRange = false;
         }
 
 

@@ -9,47 +9,48 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1282822884322212}
+  m_RootGameObject: {fileID: 1431935787566518}
   m_IsPrefabAsset: 1
---- !u!1 &1282822884322212
+--- !u!1 &1431935787566518
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4874447024079096}
-  - component: {fileID: 212378970575498762}
-  - component: {fileID: 50771115998861724}
-  - component: {fileID: 114240578047074002}
-  - component: {fileID: 58051110493533928}
-  m_Layer: 8
-  m_Name: Party Member
-  m_TagString: ally
+  - component: {fileID: 4798871529620146}
+  - component: {fileID: 212401221027513724}
+  - component: {fileID: 114748922883520584}
+  - component: {fileID: 50392160936175598}
+  - component: {fileID: 58236453109045554}
+  - component: {fileID: 95219035243261120}
+  m_Layer: 9
+  m_Name: Slime
+  m_TagString: enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4874447024079096
+--- !u!4 &4798871529620146
 Transform:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1282822884322212}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_GameObject: {fileID: 1431935787566518}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.66, y: 1.4, z: 0.00027200766}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!50 &50771115998861724
+--- !u!50 &50392160936175598
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1282822884322212}
+  m_GameObject: {fileID: 1431935787566518}
   m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
@@ -63,12 +64,12 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!58 &58051110493533928
+--- !u!58 &58236453109045554
 CircleCollider2D:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1282822884322212}
+  m_GameObject: {fileID: 1431935787566518}
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
@@ -77,45 +78,51 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.4
---- !u!114 &114240578047074002
+  m_Radius: 0.5
+--- !u!95 &95219035243261120
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1431935787566518}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 243a6005b2fb90747a32a01846e0f886, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &114748922883520584
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1282822884322212}
+  m_GameObject: {fileID: 1431935787566518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d51a4e222382e3948a6a036490d3720c, type: 3}
+  m_Script: {fileID: 11500000, guid: c60b6e5c7d865b544b7e0f52d143eb98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponAttack: {fileID: 114265610058894502, guid: f7ebe870198fae94cb9dd495bf985eb9,
+  isAgressive: 1
+  speed: 3
+  health: 4
+  enemyMelee: {fileID: 114387352919150506, guid: 90268ad37812f364180134b208dc855e,
     type: 2}
-  partyLeader: 1
-  MaxRepulsionForce: 10
-  weaponCoolDownInSeconds: 1
-  rangedCoolDownInSeconds: 1
-  aggroRange: 2
-  meleeRange: 1.5
-  playerHealth: 3
-  damage: 1
-  charachterID: 0
-  repulsionForceRange: 1.5
-  moveSpeed: 7
-  rangedAttack: {fileID: 114221605529160234, guid: f55a1ca8f4e26dd41ac22a6c883c2b49,
-    type: 2}
-  followDistanceMax: 0
-  followDistanceMin: 0
-  forceOfNearbyAllies: 1
-  rotationSpeed: 5
-  offset: 1.2
-  repulsionDistance: 2
---- !u!212 &212378970575498762
+  attackCooldown: 1
+  secondsInRange: 1
+  moveRange: 5
+  attackRange: 2
+--- !u!212 &212401221027513724
 SpriteRenderer:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1282822884322212}
+  m_GameObject: {fileID: 1431935787566518}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -145,7 +152,7 @@ SpriteRenderer:
   m_SortingLayerID: -797361381
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 3c1ed5b00197f3a40aceede575b26fbd, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cd66c31f71679d54086a1593a6e7d295, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
