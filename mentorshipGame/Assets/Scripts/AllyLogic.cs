@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class AllyLogic : MonoBehaviour
 {
-    //bool PlayerAttack = false;
+    //bool PlayerAttack = false; 
     //bool SpAvailable = false;
     public WeaponAttackController weaponAttack;
     public bool partyLeader;
