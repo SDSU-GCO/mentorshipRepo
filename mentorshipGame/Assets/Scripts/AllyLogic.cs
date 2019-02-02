@@ -11,20 +11,27 @@ public class AllyLogic : MonoBehaviour
     public WeaponAttackController weaponAttack;
     public bool partyLeader;
     public static AllyLogic partyLeaderObject;
+    [SerializeField]
+    float MaxRepulsionForce;
+    [SerializeField]
     float weaponCoolDownInSeconds;
     float weaponCoolDownInSecondsDefault;
+    [SerializeField]
     float rangedCoolDownInSeconds;
     float rangedCoolDownInSecondsDefault;
+    public float aggroRange;
+    public float meleeRange = 1.5f;
     public int playerHealth;
     public int damage;
     public int charachterID;
+    public float repulsionForceRange;
     public float moveSpeed;
     public WeaponAttackController rangedAttack;
     Vector2 velocity = new Vector2(0,0);
     public float followDistanceMax;
     public float followDistanceMin;
     Rigidbody2D my2DRigidbody;
-    List<AllyLogic> nearbyAllies = new List<AllyLogic>();
+    //List<AllyLogic> nearbyAllies = new List<AllyLogic>();
     Vector2 forcesFromAllies = new Vector2(0, 0);
     [SerializeField]
     float forceOfNearbyAllies = 1;
@@ -40,10 +47,12 @@ public class AllyLogic : MonoBehaviour
         rangedCoolDownInSeconds = rangedAttack.AttackDelay;
         rangedCoolDownInSecondsDefault = rangedCoolDownInSeconds;
         my2DRigidbody = GetComponent<Rigidbody2D>();
+
     }
     private void OnEnable()
     {
         AllyLogics.Add(this);
+        
     }
     private void OnDisable()
     {
@@ -60,7 +69,6 @@ public class AllyLogic : MonoBehaviour
         {
             float moveHorizontal = Input.GetAxis("Horizontal");
             float moveVertical = Input.GetAxis("Vertical");
-
             
             Vector2 verticalComponent = ((Vector2)transform.up) * moveVertical;
             Vector2 horizontalComponent = ((Vector2)transform.right) * moveHorizontal;
@@ -106,49 +114,139 @@ public class AllyLogic : MonoBehaviour
         else
         {
             //applies to allies
-
-
-            }
-
-
-            /*AllyLogic partyLeader = GetPartyLeader();
-            if (partyLeader != null)
+            
+        }
+        foreach (AllyLogic ally in AllyLogics)
+        {
+            if(ally != this)
             {
-
-                float distance = Vector2.Distance(partyLeader.transform.position, transform.position);
-                if (canSeeTargetAlly(partyLeader))
+                EnemyLogic closestEnemy = null;
+                float absNearest=-1;
+                foreach(EnemyLogic enemyLogic in EnemyLogic.enemyLogics)
                 {
-                    if (distance < followDistanceMin)
+                    float nearest = Vector2.Distance(transform.position, enemyLogic.transform.position);
+                    if(absNearest==-1 || nearest<absNearest)
                     {
-                        //back off
-                        my2DRigidbody.velocity = (((Vector2)transform.position) - ((Vector2)partyLeader.transform.position)).normalized * moveSpeed;
+                        absNearest = nearest;
+                        closestEnemy = enemyLogic;
                     }
-                    else if (distance < followDistanceMax)
+                }
+                
+                if((closestEnemy == null) || Vector2.Distance(transform.position, closestEnemy.transform.position) > aggroRange)
+                {
+                    if ((ally != this && (Vector2.Distance(GetPartyLeader().transform.position, transform.position) > repulsionDistance)))
                     {
-                        //stay still
+                        Vector2 forceTowardLeader = GetPartyLeader().transform.position - transform.position;
+                        my2DRigidbody.velocity = forceTowardLeader;
+                    }
+                }
+                else if((closestEnemy != null) && this != GetPartyLeader())
+                {
+
+                    Vector2 forceTowardEnemy = closestEnemy.transform.position - transform.position;
+                    my2DRigidbody.velocity = forceTowardEnemy;
+
+                    if (Vector2.Distance(GetPartyLeader().transform.position, transform.position) < meleeRange)
+                    {
+                        if (weaponCoolDownInSeconds <= 0)
+                        {
+                            weaponCoolDownInSeconds = weaponCoolDownInSecondsDefault * 2;
+                            //gather offsets to determine the spawn location of the enemy's attack
+                            float offset = 1;
+                            Vector2 spawnOffset = ((Vector2)closestEnemy.transform.position - (Vector2)transform.position).normalized * offset;
+                            Vector3 spawnLocation = transform.position + (Vector3)spawnOffset;
+                            spawnLocation.z = weaponAttack.transform.position.z;
+
+                            //rotate the attack towards the player
+                            Vector2 direction = spawnLocation - transform.position;
+                            float rotation = Mathf.Rad2Deg * (Mathf.Atan(direction.y / direction.x));
+                            rotation += -90;
+                            if (direction.x < 0)
+                            {
+                                rotation += 180;
+                            }
+
+                            GameObject child = Instantiate(weaponAttack.gameObject, spawnLocation, Quaternion.Euler(0, 0, rotation));
+                            child.transform.SetParent(transform);
+                        }
+                        weaponCoolDownInSeconds = Mathf.Max(0, weaponCoolDownInSeconds - Time.deltaTime);
                     }
                     else
                     {
-                        //move closer
-                        my2DRigidbody.velocity = (((Vector2)partyLeader.transform.position) - ((Vector2)transform.position)).normalized * moveSpeed;
+                        if (rangedCoolDownInSeconds <= 0)
+                        {
+                            rangedCoolDownInSeconds = rangedCoolDownInSecondsDefault * 2;
+                            //gather offsets to determine the spawn location of the enemy's attack
+                            float offset = 1;
+                            Vector2 spawnOffset = ((Vector2)closestEnemy.transform.position - (Vector2)transform.position).normalized * offset;
+                            Vector3 spawnLocation = transform.position + (Vector3)spawnOffset;
+                            spawnLocation.z = weaponAttack.transform.position.z;
+
+                            //rotate the attack towards the enemy
+                            Vector2 direction = spawnLocation - transform.position;
+                            float rotation = Mathf.Rad2Deg * (Mathf.Atan(direction.y / direction.x));
+                            rotation += -90;
+                            if (direction.x < 0)
+                            {
+                                rotation += 180;
+                            }
+
+                            GameObject childInstance = Instantiate(rangedAttack.gameObject, spawnLocation, Quaternion.Euler(0, 0, rotation));
+                            childInstance.GetComponent<Rigidbody2D>().velocity = rangedAttack.speed * direction.normalized;
+                        }
+                        rangedCoolDownInSeconds = Mathf.Max(0, rangedCoolDownInSeconds - Time.deltaTime);
                     }
                 }
-                else
+
+
+                if ((ally != this && (Vector2.Distance(ally.transform.position, transform.position) < repulsionForceRange)))
                 {
-                    //path to ally
-                    Vector2 nextPoint = getNextPoint;
-                    my2DRigidbody.velocity = (nextPoint - (Vector2)transform.position).normalized * moveSpeed;
+                    Vector2 difference = ally.transform.position - transform.position;
+                    float force = (-MaxRepulsionForce/aggroRange)* Vector2.Distance(ally.transform.position, transform.position) + MaxRepulsionForce;
+
+                    my2DRigidbody.AddForce(-force * difference.normalized);
                 }
             }
         }
 
-        getNearbyAllies();
-        foreach(AllyLogic ally in AllyLogics)
+        /*AllyLogic partyLeader = GetPartyLeader();
+        if (partyLeader != null)
         {
-            Vector2 tempForce = new Vector2(forceOfNearbyAllies, forceOfNearbyAllies);
-            tempForce.Scale( ((Vector2)transform.position - (Vector2)ally.transform.position));
-            forcesFromAllies += tempForce;
-        }*/
+
+            float distance = Vector2.Distance(partyLeader.transform.position, transform.position);
+            if (canSeeTargetAlly(partyLeader))
+            {
+                if (distance < followDistanceMin)
+                {
+                    //back off
+                    my2DRigidbody.velocity = (((Vector2)transform.position) - ((Vector2)partyLeader.transform.position)).normalized * moveSpeed;
+                }
+                else if (distance < followDistanceMax)
+                {
+                    //stay still
+                }
+                else
+                {
+                    //move closer
+                    my2DRigidbody.velocity = (((Vector2)partyLeader.transform.position) - ((Vector2)transform.position)).normalized * moveSpeed;
+                }
+            }
+            else
+            {
+                //path to ally
+                Vector2 nextPoint = getNextPoint;
+                my2DRigidbody.velocity = (nextPoint - (Vector2)transform.position).normalized * moveSpeed;
+            }
+        }
+    }
+
+    getNearbyAllies();
+    foreach(AllyLogic ally in AllyLogics)
+    {
+        Vector2 tempForce = new Vector2(forceOfNearbyAllies, forceOfNearbyAllies);
+        tempForce.Scale( ((Vector2)transform.position - (Vector2)ally.transform.position));
+        forcesFromAllies += tempForce;
+    }*/
 
         //getComponent.characterManager.Character.SpecialAttack;
 
@@ -168,7 +266,7 @@ public class AllyLogic : MonoBehaviour
             SuperFriendshipBeam();
         }
         **/
-	}
+    }
 
     /*private void getNearbyAllies()
     {
@@ -181,7 +279,7 @@ public class AllyLogic : MonoBehaviour
             }
         }
         return;
-    */}
+    */
 
     public float offset = 1.5f;
     //GameObject gameObjectTarget = new GameObject();
@@ -228,12 +326,11 @@ public class AllyLogic : MonoBehaviour
     AllyLogic GetPartyLeader()
     {
         
-
         AllyLogic partylead = null;
         foreach(AllyLogic allyLogic in AllyLogics)
         {
             if (allyLogic.partyLeader == true)
-                partyLeader = allyLogic;
+                partylead = allyLogic;
         }
         return partylead;
     }
