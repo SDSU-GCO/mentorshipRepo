@@ -14,13 +14,14 @@ public class CharacterManager : MonoBehaviour {
 	void Update () {
 
         for (int key = 0; key<setCharachters.Count;key++)
-        if (Input.GetKeyDown((key + 1).ToString()))
+        if (Input.GetButtonDown((key + 1).ToString()))
         {
                 foreach(AllyLogic ally in setCharachters)
                 {
                     ally.partyLeader = false;
                 }
                 setCharachters[key].partyLeader = true;
+                AllyLogic.partyLeaderObject = setCharachters[key];
                 Camera.main.transform.parent = setCharachters[key].transform;
                 Vector3 temp = new Vector3(setCharachters[key].transform.position.x, setCharachters[key].transform.position.y, Camera.main.transform.position.z);
                 Camera.main.transform.position = temp;

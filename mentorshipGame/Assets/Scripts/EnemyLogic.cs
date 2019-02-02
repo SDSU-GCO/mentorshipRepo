@@ -17,14 +17,26 @@ public class EnemyLogic : MonoBehaviour
     float secondsInRangeDefault;
     public float moveRange;
     public float attackRange;
+
     public bool inRange { get; private set; }
 
+    public static List<EnemyLogic> enemyLogics = new List<EnemyLogic>();
+
+    private void OnEnable()
+    {
+        enemyLogics.Add(this);
+    }
+    private void OnDisable()
+    {
+        enemyLogics.Remove(this);
+    }
 
     private void Awake()
     {
         attackCooldownDefault = attackCooldown;
         secondsInRangeDefault = secondsInRange;
     }
+    
 
     void Update()
     {
