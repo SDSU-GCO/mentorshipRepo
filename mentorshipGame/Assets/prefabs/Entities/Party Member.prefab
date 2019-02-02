@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 50771115998861724}
   - component: {fileID: 114240578047074002}
   - component: {fileID: 58051110493533928}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Party Member
   m_TagString: ally
   m_Icon: {fileID: 0}
@@ -91,10 +91,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponAttack: {fileID: 114468466129798216, guid: f7ebe870198fae94cb9dd495bf985eb9,
     type: 2}
-  partyLeader: 0
+  partyLeader: 1
+  MaxRepulsionForce: 10
+  weaponCoolDownInSeconds: 1
+  rangedCoolDownInSeconds: 1
+  aggroRange: 2
+  meleeRange: 1.5
   playerHealth: 3
   damage: 1
-  moveSpeed: 5
+  charachterID: 0
+  repulsionForceRange: 1.5
+  moveSpeed: 7
   rangedAttack: {fileID: 114221605529160234, guid: f55a1ca8f4e26dd41ac22a6c883c2b49,
     type: 2}
   followDistanceMax: 0
@@ -102,7 +109,7 @@ MonoBehaviour:
   forceOfNearbyAllies: 1
   rotationSpeed: 5
   offset: 1.2
-  repulsionDistance: 0
+  repulsionDistance: 2
 --- !u!212 &212378970575498762
 SpriteRenderer:
   m_ObjectHideFlags: 1
