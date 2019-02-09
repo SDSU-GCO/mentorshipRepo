@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4874447024079096}
   - component: {fileID: 212378970575498762}
   - component: {fileID: 50771115998861724}
+  - component: {fileID: 114392602033065286}
   - component: {fileID: 114240578047074002}
   - component: {fileID: 58051110493533928}
   m_Layer: 8
@@ -110,6 +111,21 @@ MonoBehaviour:
   rotationSpeed: 5
   offset: 1.2
   repulsionDistance: 2
+--- !u!114 &114392602033065286
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1282822884322212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0690972c60edcf240a2e5d5cf35bd743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  heartContainers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!212 &212378970575498762
 SpriteRenderer:
   m_ObjectHideFlags: 1
