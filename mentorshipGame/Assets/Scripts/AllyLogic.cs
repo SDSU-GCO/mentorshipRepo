@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class AllyLogic : MonoBehaviour
+public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
 {
+    private bool IsInHierarchy = false;
     public WeaponAttackController weaponAttack;
     public bool partyLeader;
     public static AllyLogic partyLeaderObject;
@@ -285,12 +286,28 @@ public class AllyLogic : MonoBehaviour
         }
         
     }
+    [SerializeField]
+    HeartGroup heartGroup;
 
     public void TakeDamage(int amount)
     {
         playerHealth -= amount;
+        
+        Debug.Assert(heartGroup != null, "Error: heartGroup cannot be null on " + this);
+        if (partyLeader == true)
+            heartGroup.updateHeart(playerHealth);
+
         if (playerHealth <= 0 && partyLeader == true)
             Debug.Log("Game Over");
-        HeartContainers.hearts.UpdateHP();
+    }
+
+    public bool IsAdded()
+    {
+        return IsInHierarchy;
+    }
+    public void AddToHierarchy()
+    {
+        IsInHierarchy = true;
+        heartGroup = FindObjectOfType<HeartGroup>();
     }
 }
