@@ -26,13 +26,13 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
     public float repulsionForceRange;
     public float moveSpeed;
     public WeaponAttackController rangedAttack;
-    Vector2 velocity = new Vector2(0,0);
+    //Vector2 velocity = new Vector2(0,0);
+    //Vector2 forcesFromAllies = new Vector2(0, 0);
     public float followDistanceMax;
     public float followDistanceMin;
     Rigidbody2D my2DRigidbody;
-    Vector2 forcesFromAllies = new Vector2(0, 0);
-    [SerializeField]
-    float forceOfNearbyAllies = 1;
+    //[SerializeField]
+    //float forceOfNearbyAllies = 1;
 
     [HideInInspector]
     public static List<AllyLogic> AllyLogics = new List<AllyLogic>();
@@ -208,7 +208,7 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
     }
 
     public float offset = 1.5f;
-    CircleCollider2D circleCollider2D = null;
+    //CircleCollider2D circleCollider2D = null;
 
     [SerializeField]
     float repulsionDistance;
