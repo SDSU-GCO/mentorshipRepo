@@ -9,12 +9,15 @@ public class ImageSupervisor : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        Vector3 spwanposition = transform.position;
-        spwanposition.z = spwanposition.z - 0.01f;
+        Vector3 spwanposition = Vector3.zero;
         if (firstimage == null)
             Debug.LogError("ya fuked up");
         GameObject go = Instantiate(firstimage, spwanposition, Quaternion.Euler(Vector3.zero));
-        go.transform.parent = rootObject;
-	}
+        RectTransform newTransform = go.GetComponent<RectTransform>();
+        newTransform.SetParent(rootObject);
+        newTransform.localPosition = (spwanposition);
+        newTransform.localScale = Vector3.one;
+        newTransform.sizeDelta = new Vector2(0, 0);
+    }
 	
 }

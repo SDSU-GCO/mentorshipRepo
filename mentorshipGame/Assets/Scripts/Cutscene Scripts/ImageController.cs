@@ -1,24 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(Image))]
 public class ImageController : MonoBehaviour 
 {
     public float fadeTime = 1f;
-    public GameObject nextImage = null;
+    bool stillNew = true;
     public GameObject prevImage = null;
+    public GameObject nextImage = null;
     private GameObject oldImage = null;
 
     Color color = new Color();
 
     float opacityValue = 0.0f;
     bool fadeFlag = false;
-    SpriteRenderer BGrenderer;
+    Image BGrenderer;
 
     private void Awake()
     {
-        BGrenderer = GetComponent<SpriteRenderer>();
+        BGrenderer = GetComponent<Image>();
     }
 
     private void OnEnable()
@@ -29,12 +31,12 @@ public class ImageController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown("RightArrow") && opacityValue == 1f)
+        if (Input.GetKeyDown(KeyCode.RightArrow) && opacityValue == 1f && stillNew)
         {
             NextImage();
         }
 
-        if (Input.GetKeyDown("LeftArrow") && opacityValue == 1f)
+        if (Input.GetKeyDown(KeyCode.LeftArrow) && opacityValue == 1f && stillNew)
         {
             PrevImage();
         }
@@ -42,23 +44,42 @@ public class ImageController : MonoBehaviour
 
     protected virtual void NextImage()
     {
-        Vector3 spwanposition = transform.position;
-        spwanposition.z = spwanposition.z - 0.01f;
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        Vector3 spwanposition = Vector3.zero;
+        Debug.Log(spwanposition);
         if (nextImage == null)
             Debug.LogError("ya fuked up");
-        GameObject newObject = Instantiate(nextImage, spwanposition, Quaternion.Euler(Vector3.zero));
-        newObject.transform.parent = transform.parent;
-        newObject.GetComponent<ImageController>().oldImage = gameObject;
+        else
+        {
+            stillNew = false;
+            GameObject newObject = Instantiate(nextImage, spwanposition, Quaternion.Euler(Vector3.zero));
+            RectTransform newTransform = newObject.GetComponent<RectTransform>();
+            newTransform.SetParent(rectTransform.parent);
+            newTransform.localPosition = new Vector3(rectTransform.localPosition.x, rectTransform.localPosition.y, rectTransform.localPosition.z - 0.01f); ;
+            newTransform.localScale = Vector3.one;
+            newTransform.sizeDelta = new Vector2(0, 0);
+            newObject.GetComponent<ImageController>().oldImage = gameObject;
+        }
     }
 
     void PrevImage()
     {
-        Vector3 spwanposition = transform.position;
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        Vector3 spwanposition = rectTransform.position;
         spwanposition.z = spwanposition.z - 0.01f;
         if (prevImage == null)
             Debug.LogError("ya fuked up");
-        GameObject newObject = Instantiate(prevImage, spwanposition, Quaternion.Euler(Vector3.zero));
-        newObject.GetComponent<ImageController>().oldImage = gameObject;
+        else
+        {
+            stillNew = false;
+            GameObject newObject = Instantiate(prevImage, spwanposition, Quaternion.Euler(Vector3.zero));
+            RectTransform newTransform = newObject.GetComponent<RectTransform>();
+            newTransform.SetParent(rectTransform.parent);
+            newTransform.localPosition = (spwanposition);
+            newTransform.localScale = Vector3.one;
+            newTransform.sizeDelta = new Vector2(0, 0);
+            newObject.GetComponent<ImageController>().oldImage = gameObject;
+        }
     }
 
     IEnumerator StartFade()
