@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(EnemyLogic))]
 public class HamsterStates : MonoBehaviour {
@@ -22,7 +21,7 @@ public class HamsterStates : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        if( enemyLogicRef.inRange == true){
+        if( enemyLogicRef.InRange == true){
             spriteRenderer.sprite = AngrySprite;
             }else{
             spriteRenderer.sprite = SleepingSprite;

@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Intro.unity
+    guid: 432b66984c2cd8c4eb84a5d4d257b5d8
+  - enabled: 1
+    path: Assets/Scenes/World One.unity
+    guid: a242ae205d829a5459aa66497b3c9215
+  - enabled: 1
+    path: Assets/Scenes/Devon's Scene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects: {}

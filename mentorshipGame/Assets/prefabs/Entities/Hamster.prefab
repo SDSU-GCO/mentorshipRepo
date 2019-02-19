@@ -24,7 +24,6 @@ GameObject:
   - component: {fileID: 114305587311885288}
   - component: {fileID: 50744974312676770}
   - component: {fileID: 58619789038322286}
-  - component: {fileID: 95156395998911804}
   m_Layer: 9
   m_Name: Hamster
   m_TagString: enemy
@@ -80,24 +79,6 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
---- !u!95 &95156395998911804
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1833951447024760}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114305587311885288
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -131,6 +112,7 @@ MonoBehaviour:
   secondsInRange: 1
   moveRange: 5
   attackRange: 2
+  animator: {fileID: 0}
 --- !u!212 &212027664318793738
 SpriteRenderer:
   m_ObjectHideFlags: 1

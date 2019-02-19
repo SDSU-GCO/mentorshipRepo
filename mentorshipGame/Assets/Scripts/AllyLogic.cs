@@ -4,8 +4,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
+public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy, IDamageable
 {
+    public event EventHandler InflictEvent;
+
+    public void InflictDamage(int inDamage)
+    {
+        TakeDamage(inDamage);
+        if (InflictEvent != null) InflictEvent(this, EventArgs.Empty); //Announce that the object took damage
+    }
+
+
     private bool IsInHierarchy = false;
     public WeaponAttackController weaponAttack;
     public bool partyLeader;
@@ -45,7 +54,6 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
         rangedCoolDownInSeconds = rangedAttack.AttackDelay;
         rangedCoolDownInSecondsDefault = rangedCoolDownInSeconds;
         my2DRigidbody = GetComponent<Rigidbody2D>();
-
     }
     private void OnEnable()
     {

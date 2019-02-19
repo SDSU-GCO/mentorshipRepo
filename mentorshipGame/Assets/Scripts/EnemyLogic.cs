@@ -18,7 +18,8 @@ public class EnemyLogic : MonoBehaviour
     public float moveRange;
     public float attackRange;
     public static List<EnemyLogic> enemyLogics = new List<EnemyLogic>();
-    public bool inRange { get; private set; }
+    public bool InRange { get; private set; }
+    public Animator animator = null;
 
     private void OnEnable()
     {
@@ -33,6 +34,7 @@ public class EnemyLogic : MonoBehaviour
     {
         attackCooldownDefault = attackCooldown;
         secondsInRangeDefault = secondsInRange;
+        animator = GetComponent<Animator>();
     }
     
 
@@ -76,20 +78,22 @@ public class EnemyLogic : MonoBehaviour
         {
             Vector2 enVel = new Vector2((transform.position.x - target.transform.position.x), (transform.position.y - target.transform.position.y));
             enVel = enVel.normalized * speed;
-            inRange = true;
+            InRange = true;
             if (isAgressive == true)
             {
                 GetComponent<Rigidbody2D>().velocity = -enVel;
             }
             Vector2.MoveTowards(enVel, target.transform.position, range);
-            GetComponent<Animator>().SetBool("ChargeRange", true);
+            if(animator!=null)
+                animator.SetBool("ChargeRange", true);
 
             //check if the enemy is in melee range
             if (range <= attackRange)
             {
                 //after 2 seconds, attack
                 secondsInRange = Mathf.Max(0, secondsInRange - Time.deltaTime);
-                GetComponent<Animator>().SetBool("MeleeRange", true);
+                if (animator != null)
+                    animator.SetBool("MeleeRange", true);
                 if (secondsInRange == 0 && attackCooldown == 0)
                 {
                     MeleeAttack();
@@ -99,7 +103,9 @@ public class EnemyLogic : MonoBehaviour
             else
             {
                 secondsInRange = Mathf.Min(secondsInRangeDefault, secondsInRange + Time.deltaTime);
-                GetComponent<Animator>().SetBool("MeleeRange", false);
+
+                if (animator != null)
+                    animator.SetBool("MeleeRange", false);
             }
 
         }
@@ -107,9 +113,13 @@ public class EnemyLogic : MonoBehaviour
         else
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            GetComponent<Animator>().SetBool("ChargeRange", false);
-            GetComponent<Animator>().SetBool("MeleeRange", false);
-            inRange = false;
+
+            if (animator != null)
+            {
+                animator.SetBool("ChargeRange", false);
+                animator.SetBool("MeleeRange", false);
+            }
+            InRange = false;
         }
 
 

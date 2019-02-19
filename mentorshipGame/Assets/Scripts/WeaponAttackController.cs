@@ -47,6 +47,10 @@ public class WeaponAttackController : MonoBehaviour {
         {
             collision.gameObject.GetComponent<EnemyLogic>().TakeDamage(damage);
         }
+        else if (collision.gameObject.tag == "Boss" && attackingFriendlies == false)
+        {
+            collision.gameObject.GetComponent<IDamageable>().InflictDamage(damage);
+        }
         Destroy(gameObject);
         
     }
@@ -63,9 +67,12 @@ public class WeaponAttackController : MonoBehaviour {
         else if (collision.tag == "enemy" && attackingFriendlies == false)
         {
             collision.gameObject.GetComponent<EnemyLogic>().TakeDamage(damage);
-            
         }
-        
+        else if (collision.tag == "Boss" && attackingFriendlies == false)
+        {
+            collision.gameObject.GetComponent<IDamageable>().InflictDamage(damage);
+        }
+
     }
 
 }

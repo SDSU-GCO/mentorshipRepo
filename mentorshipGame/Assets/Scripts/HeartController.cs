@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UI;
 
+[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(Image))]
 public class HeartController : MonoBehaviour, IGameObjectAddedToHierarchy
 {
     public HeartGroup heartGroup;
+    private SpriteRenderer spriteRenderer;
+    private Image image;
     bool IsInScene=false;
 
     [SerializeField]
@@ -13,16 +18,24 @@ public class HeartController : MonoBehaviour, IGameObjectAddedToHierarchy
     [SerializeField]
     private Sprite emptyHeart;
 
+    private void Awake()
+    {
+        if(spriteRenderer==null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        if (image == null)
+            image = GetComponent<Image>();
+        image.sprite = spriteRenderer.sprite;
+    }
 
     public void setFull()
     {
-        GetComponent<SpriteRenderer>().sprite = fullHeart;
+        image.sprite = spriteRenderer.sprite = fullHeart;
         return;
     }
 
     public void setEmpty()
     {
-        GetComponent<SpriteRenderer>().sprite = emptyHeart;
+        image.sprite = spriteRenderer.sprite = emptyHeart;
         return;
     }
    
@@ -30,10 +43,13 @@ public class HeartController : MonoBehaviour, IGameObjectAddedToHierarchy
     {
         return IsInScene;
     }
+
     public void AddToHierarchy()
     {
         IsInScene = true;
         heartGroup = FindObjectOfType<HeartGroup>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        image = GetComponent<Image>();
         return;
     }
 }

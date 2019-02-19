@@ -8,7 +8,7 @@ AnimatorController:
   m_Name: slimeAttack_0
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: chargeRange
+  - m_Name: ChargeRange
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -41,7 +41,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: chargeRange
+    m_ConditionEvent: ChargeRange
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102927381463851624}
@@ -89,7 +89,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: chargeRange
+    m_ConditionEvent: ChargeRange
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102025687257206166}
