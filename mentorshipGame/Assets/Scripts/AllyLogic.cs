@@ -289,6 +289,7 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
     [SerializeField]
     HeartGroup heartGroup;
 
+    //update player HP & hearts upon damage and run checks to keep HP within max and min bounds
     public void TakeDamage(int amount)
     {
         playerHealth -= amount;
@@ -297,8 +298,15 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
         if (partyLeader == true)
             heartGroup.updateHeart(playerHealth);
 
+        //Death message and prevent player from going to negative HP
         if (playerHealth <= 0 && partyLeader == true)
+        {
             Debug.Log("Game Over");
+            playerHealth = 0;
+        }
+        //prevent player from having more than their max HP
+        else if (playerHealth >= 3 && partyLeader == true)
+            playerHealth = 3;
     }
 
     public bool IsAdded()
