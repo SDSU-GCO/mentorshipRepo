@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 114392602033065286}
   - component: {fileID: 114240578047074002}
   - component: {fileID: 58051110493533928}
+  - component: {fileID: 95738240112853604}
   m_Layer: 8
   m_Name: Party Member
   m_TagString: ally
@@ -79,6 +80,24 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.4
+--- !u!95 &95738240112853604
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1282822884322212}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 27b9b3e6b523d594194b4159525f981d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114240578047074002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -105,12 +124,13 @@ MonoBehaviour:
   moveSpeed: 7
   rangedAttack: {fileID: 114221605529160234, guid: f55a1ca8f4e26dd41ac22a6c883c2b49,
     type: 2}
+  playerAnimator: {fileID: 95738240112853604}
   followDistanceMax: 0
   followDistanceMin: 0
-  forceOfNearbyAllies: 1
   rotationSpeed: 5
   offset: 1.2
   repulsionDistance: 2
+  heartGroup: {fileID: 0}
 --- !u!114 &114392602033065286
 MonoBehaviour:
   m_ObjectHideFlags: 1

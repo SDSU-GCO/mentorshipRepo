@@ -26,6 +26,8 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
     public float repulsionForceRange;
     public float moveSpeed;
     public WeaponAttackController rangedAttack;
+    public Animator playerAnimator;
+
     //Vector2 velocity = new Vector2(0,0);
     //Vector2 forcesFromAllies = new Vector2(0, 0);
     public float followDistanceMax;
@@ -61,6 +63,9 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
     public float rotationSpeed = 5;
     void Update ()
     {
+
+
+
 
         if (partyLeader == true)
         {
@@ -108,9 +113,9 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
                 transform.rotation = Quaternion.Euler(0, 0, rotationVariable);
             }
         }
+        //applies to allies
         else
         {
-            //applies to allies
             
         }
         foreach (AllyLogic ally in AllyLogics)
@@ -205,6 +210,12 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
                 }
             }
         }
+        //walk cycle animation
+
+        if (my2DRigidbody.velocity.x != 0 || my2DRigidbody.velocity.y != 0)
+            playerAnimator.SetFloat("Speed", 1);
+        else
+            playerAnimator.SetFloat("Speed", 0);
     }
 
     public float offset = 1.5f;
@@ -286,6 +297,9 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy
         }
         
     }
+
+
+
     [SerializeField]
     HeartGroup heartGroup;
 
