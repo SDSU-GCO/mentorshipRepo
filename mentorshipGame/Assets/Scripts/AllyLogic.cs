@@ -11,7 +11,6 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy, IDamageable
     public void InflictDamage(int inDamage)
     {
         TakeDamage(inDamage);
-        if (InflictEvent != null) InflictEvent(this, EventArgs.Empty); //Announce that the object took damage
     }
 
 
@@ -58,7 +57,6 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy, IDamageable
     private void OnEnable()
     {
         AllyLogics.Add(this);
-        
     }
     private void OnDisable()
     {
