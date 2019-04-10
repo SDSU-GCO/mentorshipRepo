@@ -253,7 +253,8 @@ public class AllyLogic : MonoBehaviour, IGameObjectAddedToHierarchy, IDamageable
             spawnLocation.z = weaponAttack.transform.position.z;
 
 
-            Vector2 direction = spawnLocation - transform.position;
+            Vector2 direction = mouseWorldPosition - (Vector2)transform.position;
+
             float rotation = Mathf.Rad2Deg * (Mathf.Atan(direction.y / direction.x));
             rotation += -90;
             if(direction.x<0)
